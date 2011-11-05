@@ -1,0 +1,41 @@
+application: power-ranking-dst
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: latest
+
+handlers:
+- url: /stylesheets
+  static_dir: static/css
+  
+- url: /images
+  static_dir: static/images
+  
+- url: /scripts
+  static_dir: static/js
+  
+- url: /rank
+  script: views.app
+
+- url: /update_display_avg
+  script: views.app
+  
+- url: /tasks/update_teams
+  script: views.app
+  login: admin
+  
+- url: /tasks/load_teams
+  script: views.app
+  login: admin
+  
+- url: /tasks/calculate_averages
+  script: views.app
+  login: admin
+  
+- url: /tasks/copy_rankings
+  script: views.app
+  login: admin

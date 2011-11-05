@@ -1,0 +1,165 @@
+body {
+	font-family: verdana, sans-serif;
+	font-size: 10px;
+	text-align: center;
+}
+
+div#left-col { 
+	float: left;
+	text-align: right;
+}
+
+div#right-col { 
+	float: right;
+	text-align: right;
+}
+
+div#right-col h1 { 
+	font-size: 10px; 
+}
+
+div#container {
+	margin-left: auto;
+	margin-right: auto;
+	text-align: left;
+}
+
+span.green { color: green; }
+span.red { color: red; }
+
+table#ranking-table {
+	font-size: 10px;
+	width: 100%;
+}
+
+table#ranking-table tr.even {
+	background-color: #EFEFEF;
+}
+
+table#ranking-table tr.drag-row {
+	color: black;
+	background-color: #FF6633;
+}
+
+table#ranking-table tr.moved {
+	background-color: #FFFFB4;
+}
+
+table#ranking-table td.rank-cell {
+	text-align: right;
+	font-weight: bold;
+	padding-right: 5px;
+}
+
+table#ranking-table td.delta-cell,
+table#ranking-table td.avg-cell {
+	text-align: center;
+}
+
+table#ranking-table td.delta-cell {
+	/*padding-left: 6px;*/
+}
+
+table#ranking-table td.record-cell {
+	padding-left: 10px;
+	padding-right: 10px; 
+	text-align: center;
+}
+
+select#week-select {
+	font-size: 10px;
+	font-weight: bold;
+	font-family: verdana, sans-serif;
+}
+
+div#button-container {
+	padding-top: 5px;
+}
+
+div#button-container input {
+	font-family: verdana, sans-serif;
+	font-size: 10px;
+}
+	
+div#button-container input#save-button,
+div#button-container input#reset-button {
+	float: right;
+	margin-left: 6px;
+}
+
+div#button-container input#toggle-avg-button {
+	float: left;
+}
+
+div#button-container div#status {
+	color: green;
+	font-weight: bold;
+	float: right;
+	padding-top: 4px;
+	margin-right: 2px;
+}
+
+div#footer {
+    padding-top: 15px;
+    font-size: 10px;
+	text-align: center;
+    color: #777777;
+}
+
+div#footer a {
+    text-decoration: none;
+    color: #777777;
+}
+
+div#footer a:hover {
+    text-decoration: none;
+    color: #777777;
+}
+
+a.clickable-header, 
+a.clickable-header:hover, 
+a.clickable-header:visited {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+table#ranking-table td.team-cell {
+	background-image: url(/images/logo-nfl-teams-medium-vert-2.png);
+	background-repeat: no-repeat;
+	padding-left: 28px;
+	padding-right: 10px;
+}
+
+table#ranking-table td#ARI { background-position: 2px 1px; }
+table#ranking-table td#ATL { background-position: 2px -19px; }
+table#ranking-table td#BAL { background-position: 2px -39px; }
+table#ranking-table td#BUF { background-position: 2px -60px; }
+table#ranking-table td#CAR { background-position: 2px -80px; }
+table#ranking-table td#CHI { background-position: 2px -101px; }
+table#ranking-table td#CIN { background-position: 2px -121px; }
+table#ranking-table td#CLE { background-position: 2px -142px; }
+table#ranking-table td#DAL { background-position: 2px -162px; }
+table#ranking-table td#DEN { background-position: 2px -181px; }
+table#ranking-table td#DET { background-position: 2px -202px; }
+table#ranking-table td#GBP { background-position: 2px -222px; }
+table#ranking-table td#HOU { background-position: 2px -242px; }
+table#ranking-table td#IND { background-position: 2px -263px; }
+table#ranking-table td#JAC { background-position: 2px -283px; }
+table#ranking-table td#KCC { background-position: 2px -302px; }
+table#ranking-table td#MIA { background-position: 2px -323px; }
+table#ranking-table td#MIN { background-position: 2px -343px; }
+table#ranking-table td#NEP { background-position: 2px -364px; }
+table#ranking-table td#NOS { background-position: 2px -384px; }
+table#ranking-table td#NYG { background-position: 2px -405px; }
+table#ranking-table td#NYJ { background-position: 2px -425px; }
+table#ranking-table td#OAK { background-position: 2px -445px; }
+table#ranking-table td#PHI { background-position: 2px -466px; }
+table#ranking-table td#PIT { background-position: 2px -486px; }
+table#ranking-table td#SDC { background-position: 2px -507px; }
+table#ranking-table td#SFO { background-position: 2px -526px; }
+table#ranking-table td#SEA { background-position: 2px -545px; }
+table#ranking-table td#STL { background-position: 2px -566px; }
+table#ranking-table td#TBB { background-position: 2px -587px; }
+table#ranking-table td#TEN { background-position: 2px -607px; }
+table#ranking-table td#WAS { background-position: 2px -626px; }
