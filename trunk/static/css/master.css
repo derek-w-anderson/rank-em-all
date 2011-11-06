@@ -128,7 +128,7 @@ table#ranking-table td.team-cell {
 	background-image: url(/images/logo-nfl-teams-medium-vert-2.png);
 	background-repeat: no-repeat;
 	padding-left: 28px;
-	padding-right: 10px;
+	padding-right: 8px;
 }
 
 table#ranking-table td#ARI { background-position: 2px 1px; }
