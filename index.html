@@ -4,9 +4,12 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta content="A tool for /r/NFLPowerRankers." name="description">
     <title>Rank 'Em All</title>
+	
   	<link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
+	
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 	<script src="/scripts/jquery.tablednd_0_5.js"></script>
+	
 	<script type="text/javascript">
 	  $(document).ready(function() {
 		$("#ranking-table").tableDnD({
@@ -19,19 +22,21 @@
 	  });
 	  
 	  var warning = 
-		"You have unsaved changes! Please return to the page and click save. " +
-		"If you want to discard your changes, click OK to continue.";
+		"You have unsaved changes! Please return to the page and save " +
+		"or click OK to discard your changes.";
 	  
 	  function changeWeek(selectObj) {
 	    var unsaved = false;
 		$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
 		  if ($(this).hasClass('moved')) {
 		    unsaved = true;
-			return false;
+		    return false;
 		  }
 		});
 		if (!unsaved || confirm(warning)) {
 		  window.location = "/rank?week=" + selectObj[selectObj.selectedIndex].value;
+		} else {
+		  return false;
 		}
 	  }
 	  
@@ -40,11 +45,13 @@
 		$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
 		  if ($(this).hasClass('moved')) {
 		    unsaved = true;
-			return false;
+		    return false;
 		  }
 		});
 		if (!unsaved || confirm(warning)) {
 		  $('#update-display-avg-form').submit();
+		} else {
+		  return false;
 		}
 	  }
 	  
@@ -146,17 +153,20 @@
 		    $(this).removeClass('moved');
 			$(this).addClass((count % 2 == 0) ? 'even' : 'odd');
 		  }	  
+		  
 		  {% if has_prev_ranks %}
 		  // Update delta value:
-		  var rank = parseInt($(this).find('td:eq(0)').text());
-		  var prevRank = parseInt($(this).find('td:eq(3)').text());
-		  if (rank < prevRank) {
-			$(this).find('td:eq(4)').html('<span class="green">+' + (prevRank - rank) + '</span>');
-		  } else if (rank > prevRank) {
-			$(this).find('td:eq(4)').html('<span class="red">' + (prevRank - rank) + '</span>');
-		  } else {
-			$(this).find('td:eq(4)').html('-');
-		  }  
+		  if (enableButtons) {
+		    var rank = parseInt($(this).find('td:eq(0)').text());
+		    var prevRank = parseInt($(this).find('td:eq(3)').text());
+		    if (rank < prevRank) {
+			  $(this).find('td:eq(4)').html('<span class="green">+' + (prevRank - rank) + '</span>');
+		    } else if (rank > prevRank) {
+			  $(this).find('td:eq(4)').html('<span class="red">' + (prevRank - rank) + '</span>');
+		    } else {
+			  $(this).find('td:eq(4)').html('-');
+		    }
+		  }
 		  {% endif %}
 		  
 		  // Update hidden form element:
@@ -165,29 +175,19 @@
 				
 		  // Store team/rank for export list:
 		  var name = $(this).find('td:eq(2)').text();
-		  var teamNickname = name.substring(name.lastIndexOf(' '), name.length)
+		  var nameArr = name.split(' ');
+		  var teamNickname = nameArr[nameArr.length - 1]; 
 		  teams[teamNickname] = count;
 		  
 		  count++;
 		});	
+		
 		if (enableButtons) {
 		  $('#save-button').attr('disabled', '');
 		  $('#reset-button').attr('disabled', '');
 		  $('#status').css('display', 'none');
-		  
-		  {% if has_prev_ranks %}
-		  // Update delta value:
-		  var rank = parseInt($(this).find('td:eq(0)').text());
-		  var prevRank = parseInt($(this).find('td:eq(3)').text());
-		  if (rank < prevRank) {
-			$(this).find('td:eq(4)').html('<span class="green">+' + (prevRank - rank) + '</span>');
-		  } else if (rank > prevRank) {
-			$(this).find('td:eq(4)').html('<span class="red">' + (prevRank - rank) + '</span>');
-		  } else {
-			$(this).find('td:eq(4)').html('-');
-		  }  
-		  {% endif %}
 		}
+		
 		// Reset export list:
 		$('#export-list').val('');
 		var sortedTeamIds = keys(teams).sort();
@@ -217,7 +217,7 @@
 		{% set left_col_width = left_col_width - 35 %}
 	{% endif %}
 	
-    {% set container_width = right_col_width + left_col_width + 10 %}
+	{% set container_width = right_col_width + left_col_width + 10 %}
 	
 	<div id="container" style="width: {{ container_width }}px;" >
 		<div id="left-col" style="width: {{ left_col_width }}px;" >
@@ -238,7 +238,7 @@
 				<th style="display: none"></th>	
 				
 				<!-- Delta -->
-				<th width="8%" nowrap="nowrap"><u>Δ</u></th> 
+				<th width="8%" nowrap="nowrap" style="padding-left: 0px"><u>Δ</u></th> 
 				{% endif %}
 				
 				<!-- Average rank -->
@@ -272,7 +272,6 @@
 			  </tr>
 			  {% for rank in range(1, 33) %}
 			  <tr id="{{ rank }}" class={% if rank % 2 == 0 %}"even"{% else %}"odd"{% endif %}>
-				
 				<!-- Rank -->
 				<td nowrap="nowrap" class="rank-cell">{{ rank }}</td> 
 				
@@ -280,9 +279,7 @@
 				<td style="display: none">{{ rank }}</td> 	
 				
 				<!-- Team name -->
-				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">
-					{{ rankings[rank]['team_name'] }}
-				</td>
+				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>
 				
 				{% if has_prev_ranks %}
 				<!-- Last week's rank -->
@@ -304,6 +301,7 @@
 				<td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
 					{{ rankings[rank]['average'] }}
 				</td>
+				
 				<!-- Record -->
 				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td> 
 				
