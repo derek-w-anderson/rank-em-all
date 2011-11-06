@@ -1,0 +1,24 @@
+cron:
+- description: Update team records and matchup info after the 1:00 games end.
+  url: /tasks/update_teams
+  schedule: every sunday 16:30
+  timezone: America/Detroit
+  target: worker
+  
+- description: Update team records and matchup info after the 4:15 games end.
+  url: /tasks/update_teams
+  schedule: every sunday 20:00
+  timezone: America/Detroit
+  target: worker
+  
+- description: Update team records and matchup info after SNF ends.
+  url: /tasks/update_teams
+  schedule: every monday 01:00
+  timezone: America/Detroit
+  target: worker
+  
+- description: Update team records and matchup info after MNF ends.
+  url: /tasks/update_teams
+  schedule: every tuesday 01:00
+  timezone: America/Detroit
+  target: worker

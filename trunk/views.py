@@ -192,7 +192,7 @@ class DisplayAverageUpdater(web.RequestHandler):
          if display_avg not in ('Y', 'N'):
             raise ValueError
           
-         profile = UserProfile.get_or_insert(user.user_id())
+         profile = UserProfile.get_or_insert(user.user_id(), user=user)
          profile.display_avg = ('Y' == display_avg)
          profile.put()
             
