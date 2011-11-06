@@ -238,7 +238,7 @@
 				<th style="display: none"></th>	
 				
 				<!-- Delta -->
-				<th width="8%" nowrap="nowrap" style="padding-left: 0px"><u>Δ</u></th> 
+				<th width="8%" nowrap="nowrap" style="padding-left: {% if not display_avg %}3{% else %}0{% endif %}px"><u>Δ</u></th> 
 				{% endif %}
 				
 				<!-- Average rank -->
