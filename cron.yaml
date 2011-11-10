@@ -1,4 +1,10 @@
 cron:
+- description: Update team records and matchup info after TNF ends.
+  url: /tasks/update_teams
+  schedule: every friday 00:30
+  timezone: America/Detroit
+  target: worker
+
 - description: Update team records and matchup info after the 1:00 games end.
   url: /tasks/update_teams
   schedule: every sunday 16:30

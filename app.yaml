@@ -1,5 +1,5 @@
 application: power-ranking
-version: 1
+version: 2
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -37,5 +37,9 @@ handlers:
   login: admin
   
 - url: /tasks/copy_rankings
+  script: views.app
+  login: admin
+  
+- url: /tasks/update_cache
   script: views.app
   login: admin

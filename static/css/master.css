@@ -2,26 +2,56 @@ body {
 	font-family: verdana, sans-serif;
 	font-size: 10px;
 	text-align: center;
+	margin: 0;
+	background-color: #ccc;
 }
 
 div#left-col { 
 	float: left;
 	text-align: right;
+	margin-left: 10px;
 }
 
 div#right-col { 
 	float: right;
 	text-align: right;
+	margin-right: 6px;
+	color: white;
 }
 
 div#right-col h1 { 
 	font-size: 10px; 
+    margin-top: 1px;
+    padding-right: 3px;
+    padding-top: 8px;
+}
+
+div#right-col p {
+	padding-right: 3px;
+	margin-top: 0px;
+}
+
+div#right-col textarea {
+	margin-right: 3px;
+	text-align: right; 
+	background-color: #EFEFEF;
 }
 
 div#container {
+	position: relative;
+	margin-top: 10px;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: left;
+	background-color: #333;
+	/* opacity: 0.97; */    
+	/* filter: alpha(opacity=97); */ /* For IE8 and earlier */
+	-moz-box-shadow: 0 0 20px black; 
+	-webkit-box-shadow: 0 0 20px black; 
+	box-shadow: 0 0 20px black;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	padding-top: 2px;
 }
 
 span.green { color: green; }
@@ -34,6 +64,10 @@ table#ranking-table {
 
 table#ranking-table tr.even {
 	background-color: #EFEFEF;
+}
+
+table#ranking-table tr.odd {
+	background-color: white;
 }
 
 table#ranking-table tr.drag-row {
@@ -73,7 +107,7 @@ select#week-select {
 }
 
 div#button-container {
-	padding-top: 5px;
+	padding-top: 6px;
 }
 
 div#button-container input {
@@ -85,6 +119,7 @@ div#button-container input#save-button,
 div#button-container input#reset-button {
 	float: right;
 	margin-left: 6px;
+	margin-right: -1px;
 }
 
 div#button-container input#toggle-avg-button {
@@ -92,37 +127,41 @@ div#button-container input#toggle-avg-button {
 }
 
 div#button-container div#status {
-	color: green;
-	font-weight: bold;
+	color: white;
 	float: right;
-	padding-top: 4px;
+	padding-top: 3px;
 	margin-right: 2px;
 }
 
 div#footer {
-    padding-top: 15px;
+    padding-top: 10px;
+	padding-bottom: 5px;
     font-size: 10px;
 	text-align: center;
-    color: #777777;
+    color: #white;
 }
 
 div#footer a {
     text-decoration: none;
-    color: #777777;
+    color: #white;
 }
 
 div#footer a:hover {
     text-decoration: none;
-    color: #777777;
+    color: #white;
 }
 
 a.clickable-header, 
 a.clickable-header:hover, 
 a.clickable-header:visited {
-	color: black;
+	color: white;
 	text-decoration: none;
 	cursor: pointer;
 }
+
+img#bg { position: fixed; top: 0; left: 0; }
+img.bgwidth { width: 100%; }
+img.bgheight { height: 100%; }
 
 table#ranking-table td.team-cell {
 	background-image: url(/images/logo-nfl-teams-medium-vert-2.png);
@@ -159,7 +198,7 @@ table#ranking-table td#PIT { background-position: 2px -486px; }
 table#ranking-table td#SDC { background-position: 2px -507px; }
 table#ranking-table td#SFO { background-position: 2px -526px; }
 table#ranking-table td#SEA { background-position: 2px -545px; }
-table#ranking-table td#STL { background-position: 2px -566px; }
+table#ranking-table td#STL { background-position: 2px -567px; }
 table#ranking-table td#TBB { background-position: 2px -587px; }
 table#ranking-table td#TEN { background-position: 2px -607px; }
 table#ranking-table td#WAS { background-position: 2px -626px; }
