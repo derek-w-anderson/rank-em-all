@@ -11,6 +11,25 @@
 	<script src="/scripts/jquery.tablednd_0_5.js"></script>
 	
 	<script type="text/javascript">
+	  /*
+	  $(window).load(function() {    
+        var theWindow        = $(window),
+            $bg              = $("#bg"),
+            aspectRatio      = $bg.width() / $bg.height();
+
+	    function resizeBg() {
+	      if ( (theWindow.width() / theWindow.height()) < aspectRatio ) {
+	        $bg.removeClass().addClass('bgheight');
+	      } else {
+		    $bg.removeClass().addClass('bgwidth');
+	      }
+	    }
+	    theWindow.resize(function() {
+	      resizeBg();
+	    }).trigger("resize");
+	  });
+	  */
+	
 	  $(document).ready(function() {
 		$("#ranking-table").tableDnD({
 		  onDragClass: "drag-row",
@@ -209,55 +228,53 @@
 	  }
 	</script>
   </head>
-  <body onload="adjustRankAndRowColor(false, false)">
-  	{% set right_col_width = 147 %}
+  <body onload="adjustRankAndRowColor(false, false)">  
+	<!-- <img src="/images/background.jpg" id="bg" alt="" > -->
+	
+  	{% set right_col_width = 150 %}
 	
 	{% set left_col_width = 395 if not has_prev_ranks else 430 %}
 	{% if not display_avg %}
 		{% set left_col_width = left_col_width - 35 %}
 	{% endif %}
 	
-	{% set container_width = right_col_width + left_col_width + 10 %}
+	{% set container_width = right_col_width + left_col_width + 24 %}
 	
 	<div id="container" style="width: {{ container_width }}px;" >
-		<div id="left-col" style="width: {{ left_col_width }}px;" >
+		<div id="left-col" style="width: {{ left_col_width }}px;">
 			<form action="/rank?week={{ selected_week }}" method="post">
 			<table id="ranking-table" cellspacing="0" cellpadding="4">
-			  <tr class="nodrag nodrop">
+			  <tr class="nodrag nodrop" style="background-color: #333; color: white;">
 				<!-- Rank -->
-				<th width="1%" nowrap="nowrap"></th> 
+				<th width="1%" nowrap="nowrap" style="text-align: right;">#</th> 
 				
 				<!-- Original rank -->
 				<th style="display: none"></th> 
 				
 				<!-- Team name -->
-				<th width="1%" nowrap="nowrap"></th> 
+				<th width="1%" nowrap="nowrap" style="text-align: left;">Team</th> 
 				
 				{% if has_prev_ranks %}
 				<!-- Last week's rank -->	
 				<th style="display: none"></th>	
 				
 				<!-- Delta -->
-				<th width="8%" nowrap="nowrap" style="padding-left: {% if not display_avg %}3{% else %}0{% endif %}px"><u>Δ</u></th> 
+				<th width="8%" nowrap="nowrap">Δ</th> 
 				{% endif %}
 				
 				<!-- Average rank -->
 				<th width="1%" nowrap="nowrap" {% if not display_avg %}style="display: none"{% endif %}>
-					<a href="javascript:;" class="clickable-header" onclick="sortByAverageRank()">
-						<u>Avg</u>
-					</a>
+					<a href="javascript:;" class="clickable-header" onclick="sortByAverageRank()">Avg</a>
 				</th>
 				
 				<!-- Record -->
 				<th width="1%" nowrap="nowrap">
-					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">
-						<u>W-L</u>
-					</a>
+					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
 				</th>
 				
 				<!-- Weekly matchup -->
 				<th nowrap="nowrap" style="text-align: left">
-				  <u>Week</u> 
+				  Week 
 				  <select id="week-select" onchange="changeWeek(this);">
 				  {% for i in range(1, current_week+1) %}
 					<option value="{{ i }}" {% if selected_week == i %}selected="selected"{% endif %}>
@@ -286,7 +303,7 @@
 				<td style="display: none">{{ rankings[rank]['prev_rank'] }}</td> 
 
 				<!-- Delta -->
-				<td nowrap="nowrap" class="delta-cell" {% if display_avg %}style="padding-right: 8px"{% endif %}>
+				<td nowrap="nowrap" class="delta-cell">
 				  {% if rank < rankings[rank]['prev_rank'] %}
 				    <span class="green">+{{ rankings[rank]['prev_rank'] - rank }}</span>
 				  {% elif rank > rankings[rank]['prev_rank'] %}
@@ -299,7 +316,11 @@
 				
 				<!-- Average rank -->
 				<td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
-					{{ rankings[rank]['average'] }}
+				  {% if not avg_rankings or not avg_rankings.has_key(rankings[rank]['team_id']) %}
+					{{ rank }}.0
+				  {% else %}
+				    {{ avg_rankings[rankings[rank]['team_id']].rank }}
+				  {% endif %}
 				</td>
 				
 				<!-- Record -->
@@ -334,15 +355,12 @@
 			</form>
 		</div>
 		<div id="right-col" style="width: {{ right_col_width }}px;">
-			<h1><u>Instructions</u></h1>
+			<h1>Instructions</h1>
 			<p>Drag and drop teams to rank 'em, then save.</p>
 			<p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
-			<textarea cols="3" rows="33" id="export-list" readonly="readyonly" style="text-align: right"></textarea>
+			<textarea cols="3" rows="33" id="export-list" readonly="readyonly"></textarea>
 		</div>
-		<div style="clear: both" />
-		<div id="footer">
-		  Courtesy of <a href="http://www.reddit.com/user/ander1dw">ander1dw</a>. Last updated {{ last_updated }}.
-		</div>
+		<div style="clear: both; padding-bottom: 6px" />
 	</div>
   </body>
 </html>

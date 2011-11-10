@@ -1,12 +1,36 @@
 import webapp2 as web
 from urllib2 import urlopen
 from google.appengine.ext import db
+from google.appengine.api import memcache
 from google.appengine.api import users
 from datetime import datetime
 from time import strftime, gmtime
 from xml.dom import minidom
 from constants import *
 from models import *
+from views import *
+
+class CacheUpdater(web.RequestHandler):
+   def get(self):
+      current_year = datetime.now().year
+
+      # Clear the cache:
+      cleared = memcache.flush_all()
+      
+      # Repopulate the cache:
+      if cleared:
+         get_teams(reload=True)
+         get_records(current_year, reload=True)
+         for week in range(1, CURRENT_WEEK+1):
+            get_matchups(current_year, week, reload=True)
+      
+         self.response.headers['Content-Type'] = 'text/plain'
+         self.response.out.write('Cache updated successfully.')
+      
+      else:
+         self.response.headers['Content-Type'] = 'text/plain'
+         self.response.out.write('Cache could not be cleared.')
+         
 
 class RankingCopier(web.RequestHandler):
    def get(self):
@@ -14,10 +38,14 @@ class RankingCopier(web.RequestHandler):
       from_week = int(self.request.get('from_week'))
       to_year = int(self.request.get('to_year'))
       to_week = int(self.request.get('to_week'))
-
+      
       # Copy rankings from one week to another:
+      old_rankings = []
       rankings = Ranking.all().filter('year =', from_year).filter('week =', from_week)
       for ranking in rankings:
+         old_rankings.append(ranking)
+         
+      for ranking in old_rankings:
          key_name = str(to_year)+'-'+str(to_week)+'-'+ranking.team.key().name()+'-'+str(ranking.user.user_id())
          copied_ranking = Ranking.get_or_insert(
                key_name, # 2011-8-ARI-ander1dw
@@ -46,6 +74,9 @@ class RankingCopier(web.RequestHandler):
             avg.rank = round(sum / float(rankings.count()), 1)
             avg.put()
 
+      # Update the cache:
+      get_avg_rankings(to_year, to_week, reload=True)
+            
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.out.write('Rankings copied successfully.')
 
@@ -71,6 +102,9 @@ class AverageRankingCalculator(web.RequestHandler):
             avg.rank = round(sum / float(rankings.count()), 1)
             avg.put()
 
+      # Update the cache:
+      get_avg_rankings(current_year, week, reload=True)
+       
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.out.write('Averages calculated successfully.')
 
@@ -171,9 +205,9 @@ class MatchupAndRecordUpdater(web.RequestHandler):
             matchup.opp_score = team['weeks'][week]['opp_score']
             matchup.result = team['weeks'][week]['result']
             matchup.put()
-
-      self.response.headers['Content-Type'] = 'text/plain'
-      self.response.out.write('Teams updated successfully.')
+      
+      # Update the cache:
+      self.redirect('/tasks/update_cache')
 
 
 class TeamLoader(web.RequestHandler):
@@ -211,5 +245,8 @@ class TeamLoader(web.RequestHandler):
       Team.get_or_insert('OAK', location='Oakland', nickname='Raiders')
       Team.get_or_insert('NOS', location='New Orleans', nickname='Saints')
 
+      # Update the cache:
+      get_teams(reload=True)
+      
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.out.write('Teams loaded successfully.')
