@@ -21,8 +21,12 @@ class CacheUpdater(web.RequestHandler):
       if cleared:
          get_teams(reload=True)
          get_records(current_year, reload=True)
+         
          for week in range(1, CURRENT_WEEK+1):
             get_matchups(current_year, week, reload=True)
+         
+         for team in get_teams():
+            get_team_info(current_year, team.key().name(), reload=True)
       
          self.response.headers['Content-Type'] = 'text/plain'
          self.response.out.write('Cache updated successfully.')

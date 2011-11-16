@@ -1,10 +1,11 @@
+from xml.etree.ElementTree import Element, SubElement
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.api import users
 from models import *
 
 
-def get_memcache_key(prefix, year=None, week=None, user=None):
+def get_memcache_key(prefix, year=None, week=None, user=None, team=None):
    """
    Generate a key for the cache. 
    """
@@ -15,6 +16,8 @@ def get_memcache_key(prefix, year=None, week=None, user=None):
       key += '-' + str(week)
    if user is not None:
       key += '-' + str(user.user_id())
+   if team is not None:
+      key += '-' + team
       
    return key      
             
@@ -205,3 +208,59 @@ def query_rankings(year, week, user):
       
    return rankings
    
+   
+def get_team_info(year, team_id, reload=False):
+   """
+   Check the cache to see if there is cached team info. 
+   If not, query for it and update the cache.
+
+   Returns:
+      An XML representation of a team. 
+   """
+   key = get_memcache_key('team-info', year=year, team=team_id)
+   
+   team_info = memcache.get(key)
+   if team_info is None or reload:
+      team = Team.get_by_key_name(team_id)
+      if not team:
+         return None
+    
+      team_info = Element('team')
+      id = SubElement(team_info, 'id')  
+      id.text = team_id
+      
+      name = SubElement(team_info, 'name')  
+      name.text = team.location + ' ' + team.nickname
+      
+      # Add record:
+      record = get_records(int(year))[team_id]
+      wins = SubElement(team_info, 'wins')  
+      wins.text = str(record.wins)
+      
+      losses = SubElement(team_info, 'losses')  
+      losses.text = str(record.losses)
+      
+      ties = SubElement(team_info, 'ties')        
+      ties.text = str(record.ties)
+
+      # Add matchups:
+      weeks = SubElement(team_info, 'weeks')      
+      matchups = Matchup.all().filter('year =', int(year)).filter('team =', team).order('-week')
+      for matchup in matchups:
+         if not matchup.result:
+            continue
+         
+         week = SubElement(weeks, 'week')
+         number = SubElement(week, 'number')
+         opponent = SubElement(week, 'opponent')
+         result = SubElement(week, 'result')
+         score = SubElement(week, 'score')
+         
+         number.text = str(matchup.week)
+         opponent.text = matchup.opp_team if matchup.at_home else ('@' + matchup.opp_team)
+         result.text = matchup.result
+         score.text = str(matchup.score) + '-' + str(matchup.opp_score)
+         
+      memcache.set(key, team_info)
+         
+   return team_info

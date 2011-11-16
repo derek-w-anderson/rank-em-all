@@ -4,277 +4,184 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta content="A tool for /r/NFLPowerRankers." name="description">
     <title>Rank 'Em All</title>
-	
   	<link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
-	
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-	<script src="/scripts/jquery.tablednd_0_5.js"></script>
-	
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+	<script type="text/javascript" src="/scripts/jquery.tablednd_0_5.js"></script>
+	<script type="text/javascript" src="/scripts/rank-em.js"></script>
 	<script type="text/javascript">
-	  /*
-	  $(window).load(function() {    
-        var theWindow        = $(window),
-            $bg              = $("#bg"),
-            aspectRatio      = $bg.width() / $bg.height();
+	function sortByRecord() {
+		$('#ranking-table').each(function() {
+		var rows = $('tbody > tr:not(:first-child)', this);
+			rows.sort(function(a, b) {
+				// Sort by most wins, then least losses:
+				var recA = $('td:eq({% if has_prev_ranks %}7{% else %}5{% endif %})', a).text().split('-');
+				var recB = $('td:eq({% if has_prev_ranks %}7{% else %}5{% endif %})', b).text().split('-');
+				var winA = parseInt(recA[0]);
+				var winB = parseInt(recB[0]);
+				var lossA = parseInt(recA[1]);
+				var lossB = parseInt(recB[1]);
+				if (winA > winB) return -1;
+				if (winA < winB) return 1;
+				if (lossA < lossB) return -1;
+				if (lossA > lossB) return 1;
 
-	    function resizeBg() {
-	      if ( (theWindow.width() / theWindow.height()) < aspectRatio ) {
-	        $bg.removeClass().addClass('bgheight');
-	      } else {
-		    $bg.removeClass().addClass('bgwidth');
-	      }
-	    }
-	    theWindow.resize(function() {
-	      resizeBg();
-	    }).trigger("resize");
-	  });
-	  */
+				// If same record, sort by team nickname:
+				var fullnameA = $('td:eq(3)', a).text();
+				var fullnameB = $('td:eq(3)', b).text();
+				var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
+				var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
+				if (nicknameA < nicknameB) return -1;
+				if (nicknameA > nicknameB) return 1;
+
+				return 0;
+			});
+			$.each(rows, function(index, row) {
+				$('#ranking-table').append(row);
+			});
+		});
+		clearTeamInfoBox();
+		adjustRankAndRowColor(true, true);
+	}
+
+	function sortByAverageRank() {
+		$('#ranking-table').each(function() {
+			var rows = $('tbody > tr:not(:first-child)', this);
+			rows.sort(function(a, b) {
+				// Sort by most wins, then least losses:
+				var avgA = parseFloat($('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', a).text());
+				var avgB = parseFloat($('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', b).text());
+				if (avgA > avgB) return 1;
+				if (avgA < avgB) return -1;
+
+				// If same average rank, sort by team nickname:
+				var fullnameA = $('td:eq(3)', a).text();
+				var fullnameB = $('td:eq(3)', b).text();
+				var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
+				var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
+				if (nicknameA < nicknameB) return -1;
+				if (nicknameA > nicknameB) return 1;
+
+				return 0;
+			});
+			$.each(rows, function(index, row) {
+				$('#ranking-table').append(row);
+			});
+		});
+		clearTeamInfoBox();
+		adjustRankAndRowColor(true, true);
+	}
 	
-	  $(document).ready(function() {
-		$("#ranking-table").tableDnD({
-		  onDragClass: "drag-row",
-		  onDrop: function(table, row) { 
-		    $(row).addClass('moved');
-		    adjustRankAndRowColor(true, false); 
-		  }
-		});
-	  });
-	  
-	  var warning = 
-		"You have unsaved changes! Please return to the page and save " +
-		"or click OK to discard your changes.";
-	  
-	  function changeWeek(selectObj) {
-	    var unsaved = false;
-		$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
-		  if ($(this).hasClass('moved')) {
-		    unsaved = true;
-		    return false;
-		  }
-		});
-		if (!unsaved || confirm(warning)) {
-		  window.location = "/rank?week=" + selectObj[selectObj.selectedIndex].value;
-		} else {
-		  return false;
-		}
-	  }
-	  
-	  function submitDisplayAvgForm() {
-	    var unsaved = false;
-		$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
-		  if ($(this).hasClass('moved')) {
-		    unsaved = true;
-		    return false;
-		  }
-		});
-		if (!unsaved || confirm(warning)) {
-		  $('#update-display-avg-form').submit();
-		} else {
-		  return false;
-		}
-	  }
-	  
-	  function sortByRecord() {
-		$('#ranking-table').each(function() {
-		  var rows = $('tbody > tr:not(:first-child)', this);
-		  rows.sort(function(a, b) {
-			// Sort by most wins, then least losses:
-			var recA = $('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', a).text().split('-');
-			var recB = $('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', b).text().split('-');
-			var winA = parseInt(recA[0]);
-			var winB = parseInt(recB[0]);
-			var lossA = parseInt(recA[1]);
-			var lossB = parseInt(recB[1]); 
-			if (winA > winB) return -1;
-			if (winA < winB) return 1;
-			if (lossA < lossB) return -1;
-			if (lossA > lossB) return 1;
-			
-			// If same record, sort by team nickname:
-			var fullnameA = $('td:eq(2)', a).text();
-			var fullnameB = $('td:eq(2)', b).text();
-			var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
-			var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
-			if (nicknameA < nicknameB) return -1;
-			if (nicknameA > nicknameB) return 1;
-			
-			return 0;
-		  });
-		  $.each(rows, function(index, row) {
-			$('#ranking-table').append(row);
-		  });
-		});	
-		adjustRankAndRowColor(true, true);
-	  }
-	  
-	  function sortByAverageRank() {
-		$('#ranking-table').each(function() {
-		  var rows = $('tbody > tr:not(:first-child)', this);
-		  rows.sort(function(a, b) {
-			// Sort by most wins, then least losses:
-			var avgA = parseFloat($('td:eq({% if has_prev_ranks %}5{% else %}3{% endif %})', a).text());
-			var avgB = parseFloat($('td:eq({% if has_prev_ranks %}5{% else %}3{% endif %})', b).text());
-			if (avgA > avgB) return 1;
-			if (avgA < avgB) return -1;
-			
-			// If same average rank, sort by team nickname:
-			var fullnameA = $('td:eq(2)', a).text();
-			var fullnameB = $('td:eq(2)', b).text();
-			var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
-			var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
-			if (nicknameA < nicknameB) return -1;
-			if (nicknameA > nicknameB) return 1;
-			
-			return 0;
-		  });
-		  $.each(rows, function(index, row) {
-			$('#ranking-table').append(row);
-		  });
-		});	
-		adjustRankAndRowColor(true, true);
-	  }
-	  
-	  function moveUp(teamRowId) {
-		var teamId = $('#'+teamRowId).find('td:eq(2)').attr('id');
-		var rank = $('#hidden-'+teamId).val();
-		if (rank != 1) {
-		  jQuery('#'+teamRowId).prev().before(jQuery('#'+teamRowId));
-		  $('#'+teamRowId).addClass('moved');
-		  adjustRankAndRowColor(true, false);
-		}
-	  }
-	  
-	  function moveDown(teamRowId) {
-		var teamId = $('#'+teamRowId).find('td:eq(2)').attr('id');
-		var rank = $('#hidden-'+teamId).val();
-		jQuery('#'+teamRowId).next().after(jQuery('#'+teamRowId));
-		if (rank != 32) {		
-		  $('#'+teamRowId).addClass('moved');
-		  adjustRankAndRowColor(true, false);
-		}
-	  }
-
-	  function adjustRankAndRowColor(enableButtons, fromSortFunction) {	
+	function adjustRankAndRowColor(enableButtons, fromSortFunction) {
 		var teams = {};
-	  
+
 		var count = 1;
 		$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
-		  $(this).find('td:eq(0)').text(count);
-		  if (fromSortFunction) {
-		    $(this).find('td:eq(1)').text(count);
-		  }
-		  
-		  // Fix row color:
-		  $(this).removeClass('even');
-		  $(this).removeClass('odd');
-		  var origRank = parseInt($(this).find('td:eq(1)').text());
-		  if (!$(this).hasClass('moved') || (count == origRank)) {
-		    $(this).removeClass('moved');
-			$(this).addClass((count % 2 == 0) ? 'even' : 'odd');
-		  }	  
-		  
-		  {% if has_prev_ranks %}
-		  // Update delta value:
-		  if (enableButtons) {
-		    var rank = parseInt($(this).find('td:eq(0)').text());
-		    var prevRank = parseInt($(this).find('td:eq(3)').text());
-		    if (rank < prevRank) {
-			  $(this).find('td:eq(4)').html('<span class="green">+' + (prevRank - rank) + '</span>');
-		    } else if (rank > prevRank) {
-			  $(this).find('td:eq(4)').html('<span class="red">' + (prevRank - rank) + '</span>');
-		    } else {
-			  $(this).find('td:eq(4)').html('-');
-		    }
-		  }
-		  {% endif %}
-		  
-		  // Update hidden form element:
-		  var teamId = $(this).find('td:eq(2)').attr('id');
-		  $('#hidden-'+teamId).val(count);
-				
-		  // Store team/rank for export list:
-		  var name = $(this).find('td:eq(2)').text();
-		  var nameArr = name.split(' ');
-		  var teamNickname = nameArr[nameArr.length - 1]; 
-		  teams[teamNickname] = count;
-		  
-		  count++;
-		});	
-		
+			$(this).find('td:eq(0)').text(count);
+			if (fromSortFunction) {
+				$(this).find('td:eq(1)').text(count);
+			}
+
+			// Fix row color:
+			$(this).removeClass('even');
+			$(this).removeClass('odd');
+			var origRank = parseInt($(this).find('td:eq(1)').text());
+			if (!$(this).hasClass('moved') || (count == origRank)) {
+				$(this).removeClass('moved');
+				$(this).addClass((count % 2 == 0) ? 'even' : 'odd');
+			}
+
+			{% if has_prev_ranks %}
+			// Update delta value:
+			if (enableButtons) {
+				var rank = parseInt($(this).find('td:eq(0)').text());
+				var prevRank = parseInt($(this).find('td:eq(4)').text());
+				if (rank < prevRank) {
+					$(this).find('td:eq(5)').html('<span class="green">+' + (prevRank - rank) + '</span>');
+				} else if (rank > prevRank) {
+					$(this).find('td:eq(5)').html('<span class="red">' + (prevRank - rank) + '</span>');
+				} else {
+					$(this).find('td:eq(5)').html('-');
+				}
+			}
+			{% endif %}
+
+			// Update hidden form element:
+			var teamId = $(this).find('td:eq(3)').attr('id');
+			$('#hidden-'+teamId).val(count);
+
+			// Store team/rank for export list:
+			var name = $(this).find('td:eq(3)').text();
+			var nameArr = name.split(' ');
+			var teamNickname = nameArr[nameArr.length - 1];
+			teams[teamNickname] = count;
+
+			count++;
+		});
+
 		if (enableButtons) {
-		  $('#save-button').attr('disabled', '');
-		  $('#reset-button').attr('disabled', '');
-		  $('#status').css('display', 'none');
+			$('#save-button').attr('disabled', '');
+			$('#reset-button').attr('disabled', '');
+			$('#status').css('display', 'none');
 		}
-		
+
 		// Reset export list:
 		$('#export-list').val('');
 		var sortedTeamIds = keys(teams).sort();
 		for (var i = 0; i < sortedTeamIds.length; i++) {
-		  var newVal = $('#export-list').val() + teams[sortedTeamIds[i]] + '\n';
-		  $('#export-list').val(newVal);
+			var newVal = $('#export-list').val() + teams[sortedTeamIds[i]] + '\n';
+			$('#export-list').val(newVal);
 		}
 		$('#export-list').val(
-		  $('#export-list').val().substring(0, $('#export-list').val().length - 1)
+			$('#export-list').val().substring(0, $('#export-list').val().length - 1)
 		);
-	  }
-	  
-	  function keys(obj) {
-		var keys = [];
-		for(var key in obj) {
-		  keys.push(key);
-		}
-		return keys;
-	  }
+	}
 	</script>
   </head>
-  <body onload="adjustRankAndRowColor(false, false)">  
-	<!-- <img src="/images/background.jpg" id="bg" alt="" > -->
-	
+  <body onload="adjustRankAndRowColor(false, false)">
   	{% set right_col_width = 150 %}
-	
+
 	{% set left_col_width = 395 if not has_prev_ranks else 430 %}
 	{% if not display_avg %}
 		{% set left_col_width = left_col_width - 35 %}
 	{% endif %}
-	
+
 	{% set container_width = right_col_width + left_col_width + 24 %}
-	
+
 	<div id="container" style="width: {{ container_width }}px;" >
 		<div id="left-col" style="width: {{ left_col_width }}px;">
 			<form action="/rank?week={{ selected_week }}" method="post">
 			<table id="ranking-table" cellspacing="0" cellpadding="4">
-			  <tr class="nodrag nodrop" style="background-color: #333; color: white;">
+			  <tr class="nodrag nodrop black-header-row">
 				<!-- Rank -->
-				<th width="1%" nowrap="nowrap" style="text-align: right;">#</th> 
-				
+				<th width="1%" nowrap="nowrap" style="text-align: right;">#</th>
+
 				<!-- Original rank -->
-				<th style="display: none"></th> 
-				
-				<!-- Team name -->
-				<th width="1%" nowrap="nowrap" style="text-align: left;">Team</th> 
-				
+				<th style="display: none"></th>
+
+				<!-- Team logo/name -->
+				<th width="1%" nowrap="nowrap" colspan="2" style="text-align: left;">Team</th>
+
 				{% if has_prev_ranks %}
-				<!-- Last week's rank -->	
-				<th style="display: none"></th>	
-				
+				<!-- Last week's rank -->
+				<th style="display: none"></th>
+
 				<!-- Delta -->
-				<th width="8%" nowrap="nowrap">Δ</th> 
+				<th width="8%" nowrap="nowrap">Δ</th>
 				{% endif %}
-				
+
 				<!-- Average rank -->
 				<th width="1%" nowrap="nowrap" {% if not display_avg %}style="display: none"{% endif %}>
 					<a href="javascript:;" class="clickable-header" onclick="sortByAverageRank()">Avg</a>
 				</th>
-				
+
 				<!-- Record -->
 				<th width="1%" nowrap="nowrap">
 					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
 				</th>
-				
+
 				<!-- Weekly matchup -->
 				<th nowrap="nowrap" style="text-align: left">
-				  Week 
+				  Week
 				  <select id="week-select" onchange="changeWeek(this);">
 				  {% for i in range(1, current_week+1) %}
 					<option value="{{ i }}" {% if selected_week == i %}selected="selected"{% endif %}>
@@ -283,24 +190,27 @@
 				  {% endfor %}
 				  </select>
 				</th>
-			
+
 				<!-- Up/down buttons -->
-				<th width="1%"></th> 
+				<th width="1%"></th>
 			  </tr>
 			  {% for rank in range(1, 33) %}
 			  <tr id="{{ rank }}" class={% if rank % 2 == 0 %}"even"{% else %}"odd"{% endif %}>
 				<!-- Rank -->
-				<td nowrap="nowrap" class="rank-cell">{{ rank }}</td> 
-				
+				<td nowrap="nowrap" class="rank-cell">{{ rank }}</td>
+
 				<!-- Original rank -->
-				<td style="display: none">{{ rank }}</td> 	
-				
+				<td style="display: none">{{ rank }}</td>
+
+				<!-- Team logo -->
+				<td style="padding: 0 2px 0 2px"><a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})"><img style="border: 0; text-decoration: none;" src="/images/{{ rankings[rank]['team_id'] }}.png" height="17" width="17" alt="" /></a></td>
+
 				<!-- Team name -->
 				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>
-				
+
 				{% if has_prev_ranks %}
 				<!-- Last week's rank -->
-				<td style="display: none">{{ rankings[rank]['prev_rank'] }}</td> 
+				<td style="display: none">{{ rankings[rank]['prev_rank'] }}</td>
 
 				<!-- Delta -->
 				<td nowrap="nowrap" class="delta-cell">
@@ -313,7 +223,7 @@
 				  {% endif %}
 				</td>
 				{% endif %}
-				
+
 				<!-- Average rank -->
 				<td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
 				  {% if not avg_rankings or not avg_rankings.has_key(rankings[rank]['team_id']) %}
@@ -322,15 +232,15 @@
 				    {{ avg_rankings[rankings[rank]['team_id']].rank }}
 				  {% endif %}
 				</td>
-				
+
 				<!-- Record -->
-				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td> 
-				
+				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
+
 				<!-- Weekly matchup -->
-				<td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td> 
-				
+				<td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td>
+
 				<!-- Up/down buttons -->
-				<td nowrap="nowrap">
+				<td nowrap="nowrap" class="matchup-cell">
 				  <a href="javascript:;" onclick="moveUp({{ rank }})"><img src="/images/up.png" alt="up" height="11" width="11" border="0"></a>
 				  <a href="javascript:;" onclick="moveDown({{ rank }})"><img src="/images/down.png" alt="down" height="11" width="11" border="0"></a>
 				</td>
@@ -342,25 +252,24 @@
 			  <input type="button" id="toggle-avg-button" value="{% if not display_avg %}show{% else %}hide{% endif %} avg" onclick="submitDisplayAvgForm()" />
 			  <input type="submit" id="save-button" disabled="disabled" value="save" />
 			  <input type="button" id="reset-button" disabled="disabled" value="reset" onclick="javascript:window.location='/rank?week='+{{ selected_week }};" />
-			  <div id="status">
-			  {% if status and status == 'saved' %}
-				Your rankings were saved.
-			  {% endif %}
-			  </div>
+			  <div id="status">{% if status and status == 'saved' %}Your rankings were saved.{% endif %}</div>
 			</div>
 			</form>
+
 			<form id="update-display-avg-form" action="/update_display_avg" method="post">
 			  <input type="hidden" name="display_avg" value="{% if not display_avg %}Y{% else %}N{% endif %}" />
 			  <input type="hidden" name="week" value="{{ selected_week }}" />
 			</form>
-		</div>
+		</div> <!-- left-col -->
+
 		<div id="right-col" style="width: {{ right_col_width }}px;">
 			<h1>Instructions</h1>
 			<p>Drag and drop teams to rank 'em, then save.</p>
 			<p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
 			<textarea cols="3" rows="33" id="export-list" readonly="readyonly"></textarea>
-		</div>
+		</div> <!-- right-col -->
+
 		<div style="clear: both; padding-bottom: 6px" />
-	</div>
+	</div> <!-- container -->
   </body>
 </html>
