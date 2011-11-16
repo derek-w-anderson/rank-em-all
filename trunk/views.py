@@ -8,6 +8,7 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from datetime import datetime
 from xml.dom import minidom
+from xml.etree.ElementTree import ElementTree
 from constants import *
 from models import *
 from cache import *
@@ -57,6 +58,7 @@ class RankingPage(web.RequestHandler):
          'has_prev_ranks': True if rankings[1]['prev_rank'] is not None else False,
          'display_avg': display_avg,
          'current_week': CURRENT_WEEK,
+         'current_year': current_year,
          'selected_week': week,
          'export_cell': str(chr(98+week)).upper(),
          'status': self.request.get('status'),
@@ -168,9 +170,25 @@ class DisplayAverageUpdater(web.RequestHandler):
       
       self.redirect('/rank?week='+str(week))
   
+
+class TeamInfoService(web.RequestHandler):
+   def get(self):
+      year = self.request.get('year')
+      team_id = self.request.get('id')   
+      
+      team_info = get_team_info(year, team_id)
+      if team_info is None:
+         self.response.headers['Content-Type'] = 'text/plain'
+         self.response.out.write('Bad parameter.')
+         return
+      
+      self.response.headers['Content-Type'] = 'text/xml'
+      ElementTree(team_info).write(self.response)
+  
   
 urls = [
    ('/rank', RankingPage),
+   ('/team', TeamInfoService),
    ('/update_display_avg', DisplayAverageUpdater),
    ('/tasks/update_teams', MatchupAndRecordUpdater),
    ('/tasks/load_teams', TeamLoader),

@@ -1,5 +1,5 @@
 application: power-ranking
-version: 2
+version: 3
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -21,6 +21,9 @@ handlers:
 - url: /rank
   script: views.app
 
+- url: /team
+  script: views.app
+  
 - url: /update_display_avg
   script: views.app
   
