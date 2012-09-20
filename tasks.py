@@ -12,8 +12,15 @@ from views import *
 
 class CacheUpdater(web.RequestHandler):
    def get(self):
-      current_year = datetime.now().year
-
+      current_year = CURRENT_YEAR #datetime.now().year
+      teams_updated = self.request.get('teams_updated')
+      
+      status = ''
+      if teams_updated is not None and teams_updated == 'Y':
+         status = 'Teams updated successfully. '
+      elif teams_updated is not None and teams_updated == 'N':
+         status = 'Teams were not updated. '
+      
       # Clear the cache:
       cleared = memcache.flush_all()
       
@@ -29,11 +36,11 @@ class CacheUpdater(web.RequestHandler):
             get_team_info(current_year, team.key().name(), reload=True)
       
          self.response.headers['Content-Type'] = 'text/plain'
-         self.response.out.write('Cache updated successfully.')
+         self.response.out.write(status + 'Cache updated successfully.')
       
       else:
          self.response.headers['Content-Type'] = 'text/plain'
-         self.response.out.write('Cache could not be cleared.')
+         self.response.out.write(status + 'Cache could not be cleared.')
          
 
 class RankingCopier(web.RequestHandler):
@@ -87,7 +94,7 @@ class RankingCopier(web.RequestHandler):
 
 class AverageRankingCalculator(web.RequestHandler):
    def get(self):
-      current_year = datetime.now().year
+      current_year = CURRENT_YEAR #datetime.now().year
       week = int(self.request.get('week'))
 
       teams = Team.all().order('nickname')
@@ -115,8 +122,9 @@ class AverageRankingCalculator(web.RequestHandler):
 
 class MatchupAndRecordUpdater(web.RequestHandler):
    def get(self):
+      teams_updated = False
       offset = 4 * (60 * 60)  # adjusts kickoff time to ET
-      current_year = datetime.now().year
+      current_year = CURRENT_YEAR #datetime.now().year
 
       teams = {}
       for week in range(1, CURRENT_WEEK+1):
@@ -209,9 +217,10 @@ class MatchupAndRecordUpdater(web.RequestHandler):
             matchup.opp_score = team['weeks'][week]['opp_score']
             matchup.result = team['weeks'][week]['result']
             matchup.put()
+            teams_updated = True
       
       # Update the cache:
-      self.redirect('/tasks/update_cache')
+      self.redirect('/tasks/update_cache?teams_updated='+('Y' if teams_updated else 'N'))
 
 
 class TeamLoader(web.RequestHandler):

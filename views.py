@@ -21,7 +21,7 @@ jinja_environment = jinja2.Environment(
 
 class RankingPage(web.RequestHandler):
    def get(self):
-      current_year = datetime.now().year
+      current_year = CURRENT_YEAR #datetime.now().year
       week = self.request.get('week')
       display_avg = False
       
@@ -61,13 +61,12 @@ class RankingPage(web.RequestHandler):
          'current_year': current_year,
          'selected_week': week,
          'export_cell': str(chr(98+week)).upper(),
-         'status': self.request.get('status'),
-         'last_updated': DEPLOY_DATE
+         'status': self.request.get('status')
       }))     
           
   
    def post(self):
-      current_year = datetime.now().year
+      current_year = CURRENT_YEAR #datetime.now().year
       week = self.request.get('week')
       
       # Check parameters:
