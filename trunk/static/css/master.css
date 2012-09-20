@@ -143,7 +143,7 @@ table#ranking-table td.delta-cell {
 }
 
 table#ranking-table td.record-cell {
-	padding-left: 10px;
+	padding-left: 8px;
 	padding-right: 10px;
 	text-align: center;
 }

@@ -145,7 +145,7 @@
 		{% set left_col_width = left_col_width - 35 %}
 	{% endif %}
 
-	{% set container_width = right_col_width + left_col_width + 24 %}
+	{% set container_width = right_col_width + left_col_width + 26 %}
 
 	<div id="container" style="width: {{ container_width }}px;" >
 		<div id="left-col" style="width: {{ left_col_width }}px;">
@@ -203,7 +203,7 @@
 				<td style="display: none">{{ rank }}</td>
 
 				<!-- Team logo -->
-				<td style="padding: 0 2px 0 2px"><a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})"><img style="border: 0; text-decoration: none;" src="/images/{{ rankings[rank]['team_id'] }}.png" height="17" width="17" alt="" /></a></td>
+				<td style="padding: 0 2px 0 2px"><a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})"><img style="border: 0; text-decoration: none;" src="/images/{{ rankings[rank]['team_id'] }}.png" height="18" width="18" alt="" /></a></td>
 
 				<!-- Team name -->
 				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>

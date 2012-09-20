@@ -1,0 +1,8 @@
+indexes:
+
+- kind: Matchup
+  properties:
+  - name: team
+  - name: year
+  - name: week
+    direction: desc
