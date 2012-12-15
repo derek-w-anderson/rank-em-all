@@ -174,8 +174,10 @@ function showTeamInfoBox(teamId, year) {
 				var score = '';
 				if (result == 'W') {
 					score += '<span class="green">W</span> ';
-				} else {
+				} else if (result == 'L') {
 					score += '<span class="red">L</span> ';
+				} else {
+					score += '<span>T</span> '
 				}
 				score += $(this).find("score").text();
 								
