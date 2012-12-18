@@ -42,6 +42,21 @@ function submitDisplayAvgForm() {
 	}
 }
 
+function submitDisplayDVOAForm() {
+	var unsaved = false;
+	$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
+		if ($(this).hasClass('moved')) {
+			unsaved = true;
+			return false;
+		}
+	});
+	if (!unsaved || confirm(warning)) {
+		$('#update-display-dvoa-form').submit();
+	} else {
+		return false;
+	}
+}
+
 function moveUp(teamRowId) {
 	var teamId = $('#'+teamRowId).find('td:eq(3)').attr('id');
 	var rank = $('#hidden-'+teamId).val();

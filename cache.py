@@ -4,7 +4,6 @@ from google.appengine.api import memcache
 from google.appengine.api import users
 from models import *
 
-
 def get_memcache_key(prefix, year=None, week=None, user=None, team=None):
    """
    Generate a key for the cache. 
@@ -22,6 +21,33 @@ def get_memcache_key(prefix, year=None, week=None, user=None, team=None):
    return key      
             
 
+def get_setting(name, reload=False):
+   """
+   Check the cache to see if there is a cached setting.
+   If not, query for it and update the cache. 
+
+   Returns:
+      An application setting. 
+   """
+   if name is None:
+      return None
+   
+   key = get_memcache_key('setting-'+name)
+   
+   setting = memcache.get(key)
+   if setting is None or reload:
+      setting = AppSetting.get_by_key_name(name)
+      memcache.set(key, setting)
+
+   value = setting.value
+   try:
+      value = int(value)
+   except ValueError:
+      pass # NaN might be OK
+	  
+   return value
+   
+			
 def get_profile(user, reload=False):
    """
    Check the cache to see if there is a cached profile.
@@ -41,7 +67,7 @@ def get_profile(user, reload=False):
       memcache.set(key, profile)
 
    return profile
-  
+     
   
 def get_teams(reload=False):
    """
@@ -165,6 +191,9 @@ def query_rankings(year, week, user):
    
       # Get team record:
       record_obj = records[team_id]
+      dvoa = '-'
+      if record_obj.dvoa:
+         dvoa = record_obj.dvoa
       record = str(record_obj.wins) + '-' + str(record_obj.losses)
       if (record_obj.ties > 0):
          record += '-' + str(record_obj.ties)
@@ -199,7 +228,8 @@ def query_rankings(year, week, user):
          'team_name': team.location + ' ' + team.nickname,
          'prev_rank': prev_rank,
          'record': record,
-         'matchup': matchup
+         'matchup': matchup,
+         'dvoa': dvoa
       }   
       
    # Update the cache:

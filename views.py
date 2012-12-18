@@ -9,7 +9,6 @@ from google.appengine.api import users
 from datetime import datetime
 from xml.dom import minidom
 from xml.etree.ElementTree import ElementTree
-from constants import *
 from models import *
 from cache import *
 from tasks import *
@@ -21,17 +20,18 @@ jinja_environment = jinja2.Environment(
 
 class RankingPage(web.RequestHandler):
    def get(self):
-      current_year = CURRENT_YEAR #datetime.now().year
+      current_year = get_setting('year')
+      current_week = get_setting('week')
       week = self.request.get('week')
       display_avg = False
       
       # Check parameters:
       if not week:
-         week = CURRENT_WEEK 
+         week = current_week
       else:
          try:
             week = int(week)
-            if week < 1 or week > CURRENT_WEEK:
+            if week < 1 or week > current_week:
                raise ValueError
          except ValueError:
             self.response.headers['Content-Type'] = 'text/plain'
@@ -45,7 +45,8 @@ class RankingPage(web.RequestHandler):
       
       # Get user's profile (may not exist):
       profile = get_profile(user)
-      display_avg = False if not profile else profile.display_avg
+      display_avg = False if not profile or not profile.display_avg else profile.display_avg
+      display_dvoa = False if not profile or not profile.display_dvoa else profile.display_dvoa
       
       # Get team info:
       rankings = get_rankings(current_year, week, user)
@@ -57,7 +58,8 @@ class RankingPage(web.RequestHandler):
          'avg_rankings': avg_rankings,
          'has_prev_ranks': True if rankings[1]['prev_rank'] is not None else False,
          'display_avg': display_avg,
-         'current_week': CURRENT_WEEK,
+         'display_dvoa': display_dvoa,
+         'current_week': current_week,
          'current_year': current_year,
          'selected_week': week,
          'export_cell': str(chr(98+week)).upper(),
@@ -66,16 +68,17 @@ class RankingPage(web.RequestHandler):
           
   
    def post(self):
-      current_year = CURRENT_YEAR #datetime.now().year
+      current_year = get_setting('year')
+      current_week = get_setting('week')
       week = self.request.get('week')
       
       # Check parameters:
       if not week:
-         week = CURRENT_WEEK 
+         week = current_week 
       else:
          try:
             week = int(week)
-            if week < 1 or week > CURRENT_WEEK:
+            if week < 1 or week > current_week:
                raise ValueError
          except ValueError:
             self.response.headers['Content-Type'] = 'text/plain'
@@ -110,11 +113,12 @@ class RankingPage(web.RequestHandler):
             except ValueError:
                submitted_rank = -1
          ranking.rank = submitted_rank 
+         ranking.updated_by_user = True
          ranking.put()
 
       # Update average rankings:            
       for team in teams:
-         rankings = team.rankings.filter('year =', current_year).filter('week =', week)
+         rankings = team.rankings.filter('year =', current_year).filter('week =', week).filter('updated_by_user =', True)
          if rankings:
             avg = AverageRanking.get_or_insert(
                str(current_year)+'-'+str(week)+'-'+team.key().name(), # 2011-8-ARI
@@ -138,6 +142,7 @@ class RankingPage(web.RequestHandler):
 class DisplayAverageUpdater(web.RequestHandler):
    def post(self):
       user = users.get_current_user()
+      current_week = get_setting('week')
       week = self.request.POST['week']
       display_avg = self.request.POST['display_avg']
 
@@ -149,7 +154,7 @@ class DisplayAverageUpdater(web.RequestHandler):
          
       try:
          week = int(week)
-         if week < 1 or week > CURRENT_WEEK:
+         if week < 1 or week > current_week:
             raise ValueError
             
          if display_avg not in ('Y', 'N'):
@@ -168,7 +173,43 @@ class DisplayAverageUpdater(web.RequestHandler):
          return
       
       self.redirect('/rank?week='+str(week))
-  
+
+
+class DisplayDVOAUpdater(web.RequestHandler):
+   def post(self):
+      user = users.get_current_user()
+      current_week = get_setting('week')
+      week = self.request.POST['week']
+      display_dvoa = self.request.POST['display_dvoa']
+
+      # Check parameters:
+      if not user or not week or not display_dvoa:
+         self.response.headers['Content-Type'] = 'text/plain'
+         self.response.out.write('Bad POST data.')
+         return
+         
+      try:
+         week = int(week)
+         if week < 1 or week > current_week:
+            raise ValueError
+            
+         if display_dvoa not in ('Y', 'N'):
+            raise ValueError
+          
+         profile = UserProfile.get_or_insert(user.user_id(), user=user)
+         profile.display_dvoa = ('Y' == display_dvoa)
+         profile.put()
+         
+         # Update the cache:
+         get_profile(user, reload=True)
+            
+      except ValueError:
+         self.response.headers['Content-Type'] = 'text/plain'
+         self.response.out.write('Bad parameter.')
+         return
+      
+      self.redirect('/rank?week='+str(week))
+      
 
 class TeamInfoService(web.RequestHandler):
    def get(self):
@@ -185,14 +226,33 @@ class TeamInfoService(web.RequestHandler):
       ElementTree(team_info).write(self.response)
   
   
+class SettingsManager(web.RequestHandler):  
+   def get(self):
+      template = jinja_environment.get_template('/admin/settings.html')
+      self.response.out.write(template.render({ 'settings': AppSetting.all() }))     
+   
+   def post(self):
+      for setting in AppSetting.all():
+         setting.value = self.request.POST[setting.key().name()]
+         setting.put()
+      
+         # Update the cache:
+         get_setting(setting.key().name(), reload=True)
+      
+      self.redirect('/admin/manage_settings')
+   
+  
 urls = [
    ('/rank', RankingPage),
    ('/team', TeamInfoService),
    ('/update_display_avg', DisplayAverageUpdater),
+   ('/update_display_dvoa', DisplayDVOAUpdater),
    ('/tasks/update_teams', MatchupAndRecordUpdater),
    ('/tasks/load_teams', TeamLoader),
+   ('/tasks/load_settings', SettingsLoader),
    ('/tasks/calculate_averages', AverageRankingCalculator),
    ('/tasks/copy_rankings', RankingCopier),
-   ('/tasks/update_cache', CacheUpdater)
+   ('/tasks/update_cache', CacheUpdater),
+   ('/admin/manage_settings', SettingsManager)
 ]
 app = web.WSGIApplication(urls, debug=False)

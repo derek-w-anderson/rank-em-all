@@ -134,7 +134,8 @@ table#ranking-table td.rank-cell {
 }
 
 table#ranking-table td.delta-cell,
-table#ranking-table td.avg-cell {
+table#ranking-table td.avg-cell,
+table#ranking-table td.dvoa-cell {
 	text-align: center;
 }
 
@@ -178,8 +179,13 @@ div#button-container input#reset-button {
 	margin-right: -1px;
 }
 
-div#button-container input#toggle-avg-button {
+div#button-container input#toggle-avg-button,
+div#button-container input#toggle-dvoa-button {
 	float: left;
+}
+
+div#button-container input#toggle-dvoa-button {
+	margin-left: 6px;
 }
 
 div#button-container div#status {
