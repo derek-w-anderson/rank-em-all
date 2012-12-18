@@ -1,5 +1,5 @@
 application: power-ranking
-version: 4
+version: 5
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -26,12 +26,19 @@ handlers:
   
 - url: /update_display_avg
   script: views.app
+
+- url: /update_display_dvoa
+  script: views.app
   
 - url: /tasks/update_teams
   script: views.app
   login: admin
   
 - url: /tasks/load_teams
+  script: views.app
+  login: admin
+
+- url: /tasks/load_settings
   script: views.app
   login: admin
   
@@ -44,5 +51,9 @@ handlers:
   login: admin
   
 - url: /tasks/update_cache
+  script: views.app
+  login: admin
+  
+- url: /admin/manage_settings
   script: views.app
   login: admin

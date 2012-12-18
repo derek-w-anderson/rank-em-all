@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en-US">
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta content="Settings for Rank 'Em All" name="description">
+    <title>Settings</title>
+  </head>
+  
+  <body>
+    <h1>Settings</h1>
+    <ol>
+       <li>Increment the week:
+         <form action="/admin/manage_settings" method="post">
+         <table>         
+            {% for setting in settings %}
+              <tr>
+                <td style="text-align:right"><label for="{{ setting.key().name() }}" style="text-transform:capitalize">{{ setting.key().name() }}:</label></td>
+                <td><input type="text" size="4" id="{{ setting.key().name() }}" name="{{ setting.key().name() }}" value="{{ setting['value'] }}" /></td>
+              </tr>
+            {% endfor %}
+            <tr>
+                <td>&nbsp;</td>
+                <td><input type="submit" value="Save" /></td>
+            </tr>
+         </table>
+         </form>
+       </li>
+       
+       <li>
+         <input type="button" value="Copy Rankings" onclick="copyRankings()" />
+       </li>
+       
+       <li>
+         <input type="button" value="Update Teams" onclick="updateTeams()" />
+       </li>
+    </ol>
+  </body>
+  
+  <script type="text/javascript">
+    function copyRankings() {
+      var current_year = document.getElementById('year').value;
+      var current_week = document.getElementById('week').value; 
+      
+      parent.location = 'http://worker.power-ranking.appspot.com/tasks/copy_rankings?from_year=' + current_year + '&to_year=' + current_year + '&from_week=' + (parseInt(current_week) - 1) + '&to_week=' + current_week;
+    }
+    
+    function updateTeams() {
+      parent.location = 'http://worker.power-ranking.appspot.com/tasks/update_teams';
+    }
+  </script>
+</html>

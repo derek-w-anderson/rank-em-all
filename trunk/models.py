@@ -11,6 +11,7 @@ class Record(db.Model):
    wins = db.IntegerProperty()
    losses = db.IntegerProperty()
    ties = db.IntegerProperty()
+   dvoa = db.StringProperty()
    last_updated = db.DateTimeProperty(auto_now=True)
         
 class Matchup(db.Model):
@@ -31,6 +32,7 @@ class Ranking(db.Model):
    rank = db.IntegerProperty()
    team = db.ReferenceProperty(Team, collection_name="rankings")
    user = db.UserProperty()
+   updated_by_user = db.BooleanProperty()
    last_updated = db.DateTimeProperty(auto_now=True)
     
 class AverageRanking(db.Model):
@@ -44,4 +46,10 @@ class UserProfile(db.Model):
    user = db.UserProperty()
    nickname = db.StringProperty()
    display_avg = db.BooleanProperty()
+   display_dvoa = db.BooleanProperty()
    last_updated = db.DateTimeProperty(auto_now=True)
+   
+class AppSetting(db.Model):
+	value = db.StringProperty()
+	
+	
