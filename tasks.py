@@ -118,22 +118,37 @@ class MatchupAndRecordUpdater(web.RequestHandler):
 
          for matchup in xml.getElementsByTagName('matchup'):
             kickoff = int(matchup.getAttribute('kickoff')) - offset
+            
             team1 = matchup.getElementsByTagName('team')[0]
             team1_id = team1.getAttribute('id')
-            team2 = matchup.getElementsByTagName('team')[1]
-            team2_id = team2.getAttribute('id')
-
             if not teams.has_key(team1_id): teams[team1_id] = {}
-            if not teams.has_key(team2_id): teams[team2_id] = {}
             if not teams[team1_id].has_key('weeks'): teams[team1_id]['weeks'] = {}
             if not teams[team1_id].has_key('win'):   teams[team1_id]['win'] = 0
             if not teams[team1_id].has_key('loss'):  teams[team1_id]['loss'] = 0
             if not teams[team1_id].has_key('tie'):   teams[team1_id]['tie'] = 0
+            if not teams[team1_id].has_key('pts_for'):     teams[team1_id]['pts_for'] = 0
+            if not teams[team1_id].has_key('pts_against'): teams[team1_id]['pts_against'] = 0
+            if not teams[team1_id].has_key('streak'):      teams[team1_id]['streak'] = 0
+            if not teams[team1_id].has_key('off_pass_rank'): teams[team1_id]['off_pass_rank'] = 0 
+            if not teams[team1_id].has_key('off_rush_rank'): teams[team1_id]['off_rush_rank'] = 0 
+            if not teams[team1_id].has_key('def_pass_rank'): teams[team1_id]['def_pass_rank'] = 0 
+            if not teams[team1_id].has_key('def_rush_rank'): teams[team1_id]['def_rush_rank'] = 0 
+            
+            team2 = matchup.getElementsByTagName('team')[1]
+            team2_id = team2.getAttribute('id')
+            if not teams.has_key(team2_id): teams[team2_id] = {}            
             if not teams[team2_id].has_key('weeks'): teams[team2_id]['weeks'] = {}
             if not teams[team2_id].has_key('win'):   teams[team2_id]['win'] = 0
             if not teams[team2_id].has_key('loss'):  teams[team2_id]['loss'] = 0
             if not teams[team2_id].has_key('tie'):   teams[team2_id]['tie'] = 0
-
+            if not teams[team2_id].has_key('pts_for'):     teams[team2_id]['pts_for'] = 0
+            if not teams[team2_id].has_key('pts_against'): teams[team2_id]['pts_against'] = 0
+            if not teams[team2_id].has_key('streak'):      teams[team2_id]['streak'] = 0
+            if not teams[team2_id].has_key('off_pass_rank'): teams[team2_id]['off_pass_rank'] = 0 
+            if not teams[team2_id].has_key('off_rush_rank'): teams[team2_id]['off_rush_rank'] = 0 
+            if not teams[team2_id].has_key('def_pass_rank'): teams[team2_id]['def_pass_rank'] = 0 
+            if not teams[team2_id].has_key('def_rush_rank'): teams[team2_id]['def_rush_rank'] = 0 
+            
             teams[team1_id]['weeks'][week] = {
                'score': 0,
                'opp_team': team2_id,
@@ -142,6 +157,11 @@ class MatchupAndRecordUpdater(web.RequestHandler):
                'at_home': True if team1.getAttribute('isHome') == '1' else False,
                'result': None
             }
+            teams[team1_id]['off_pass_rank'] = int(team1.getAttribute('passOffenseRank'))
+            teams[team1_id]['off_rush_rank'] = int(team1.getAttribute('rushOffenseRank'))
+            teams[team1_id]['def_pass_rank'] = int(team1.getAttribute('passDefenseRank'))
+            teams[team1_id]['def_rush_rank'] = int(team1.getAttribute('rushDefenseRank'))
+            
             teams[team2_id]['weeks'][week] = {
                'score': 0,
                'opp_team': team1_id,
@@ -150,31 +170,50 @@ class MatchupAndRecordUpdater(web.RequestHandler):
                'at_home': True if team2.getAttribute('isHome') == '1' else False,
                'result': None
             }
+            teams[team2_id]['off_pass_rank'] = int(team2.getAttribute('passOffenseRank'))
+            teams[team2_id]['off_rush_rank'] = int(team2.getAttribute('rushOffenseRank'))
+            teams[team2_id]['def_pass_rank'] = int(team2.getAttribute('passDefenseRank'))
+            teams[team2_id]['def_rush_rank'] = int(team2.getAttribute('rushDefenseRank'))
+            
             if int(matchup.getAttribute('gameSecondsRemaining')) == 0:
                teams[team1_id]['weeks'][week]['score'] = int(team1.getAttribute('score'))
                teams[team1_id]['weeks'][week]['opp_score'] = int(team2.getAttribute('score'))
+               teams[team1_id]['pts_for'] += int(team1.getAttribute('score'))
+               teams[team1_id]['pts_against'] += int(team2.getAttribute('score'))
+               
                teams[team2_id]['weeks'][week]['score'] = int(team2.getAttribute('score'))
                teams[team2_id]['weeks'][week]['opp_score'] = int(team1.getAttribute('score'))
-
+               teams[team2_id]['pts_for'] += int(team2.getAttribute('score'))
+               teams[team2_id]['pts_against'] += int(team1.getAttribute('score'))
+               
                if int(team1.getAttribute('score')) > int(team2.getAttribute('score')):
                   teams[team1_id]['weeks'][week]['result'] = 'W'
                   teams[team1_id]['win'] += 1
+                  teams[team1_id]['streak'] = (teams[team1_id]['streak'] + 1) if (teams[team1_id]['streak'] >= 0) else 1
+                  
                   teams[team2_id]['weeks'][week]['result'] = 'L'
                   teams[team2_id]['loss'] += 1
+                  teams[team2_id]['streak'] = (teams[team2_id]['streak'] - 1) if (teams[team2_id]['streak'] <= 0) else -1
 
                elif int(team1.getAttribute('score')) < int(team2.getAttribute('score')):
                   teams[team1_id]['weeks'][week]['result'] = 'L'
                   teams[team1_id]['loss'] += 1
+                  teams[team1_id]['streak'] = (teams[team1_id]['streak'] - 1) if (teams[team1_id]['streak'] <= 0) else -1
+                  
                   teams[team2_id]['weeks'][week]['result'] = 'W'
                   teams[team2_id]['win'] += 1
+                  teams[team2_id]['streak'] = (teams[team2_id]['streak'] + 1) if (teams[team2_id]['streak'] >= 0) else 1
 
                else:
                   teams[team1_id]['weeks'][week]['result'] = 'T'
                   teams[team1_id]['tie'] += 1
+                  teams[team1_id]['streak'] = 0
+                  
                   teams[team2_id]['weeks'][week]['result'] = 'T'
                   teams[team2_id]['tie'] += 1
+                  teams[team2_id]['streak'] = 0
 
-      dvoa_rankings = self.get_dvoa_rankings(current_year)
+      #dvoa_rankings = self.get_dvoa_rankings(current_year)
       
       for team_id in teams.keys():
          team = teams[team_id]
@@ -188,7 +227,14 @@ class MatchupAndRecordUpdater(web.RequestHandler):
          record.wins = team['win']
          record.losses = team['loss']
          record.ties = team['tie']
-                     
+         record.pts_for = team['pts_for']
+         record.pts_against = team['pts_against']
+         record.streak = team['streak']
+         record.off_pass_rank = team['off_pass_rank']
+         record.off_rush_rank = team['off_rush_rank']
+         record.def_pass_rank = team['def_pass_rank']
+         record.def_rush_rank = team['def_rush_rank']
+         
          #if dvoa_rankings is not None:
          #   record.dvoa = dvoa_rankings[team_id][1] 
             

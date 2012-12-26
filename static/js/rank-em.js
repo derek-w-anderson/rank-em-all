@@ -128,7 +128,12 @@ function showTeamInfoBox(teamId, year) {
 	$(infoBox).css('width', width);
 
 	var rank = parseInt($('#'+teamId).parent().find('td:eq(0)').text());
-	var top = ($('#ranking-table').offset().top + 13 + rank) + ((rank-1) * 20);
+   
+   var multiplier = 20;
+   if ($.browser.mozilla) {
+      multiplier = 21;
+   }
+	var top = ($('#ranking-table').offset().top + 11 + rank) + ((rank-1) * multiplier);
 	$(infoBox).css('top', top);
 
 	var left = $('#ranking-table').offset().left - width - $('#ranking-table').offset().top;
@@ -145,29 +150,33 @@ function showTeamInfoBox(teamId, year) {
 		cache: false,
 
 		success: function(xml) {
-			var count = 1;
+         // Add the offensive/defensive ranks:        
+         var $rankTable = $('<table>');
+         $rankTable.append($('<tr>').append(
+				$('<th>').attr('colspan', 2).html('Offense'),		
+				$('<th>').attr('colspan', 2).html('Defense')
+			));
+         $rankTable.append($('<tr>').append(
+				$('<td>').html('Pass:'),		
+            $('<td>').html($(xml).find("off_pass_rank").text()),
+				$('<td>').html('Pass:'),
+            $('<td>').html($(xml).find("def_pass_rank").text())
+			));
+         $rankTable.append($('<tr>').append(
+				$('<td>').html('Rush:'),		
+            $('<td>').html($(xml).find("off_rush_rank").text()),
+				$('<td>').html('Rush:'),
+            $('<td>').html($(xml).find("def_rush_rank").text())
+			));
+         var $rankDiv = $('<div class="offdef-rank-container">');
+         $rankDiv.append($rankTable);
+
+         // Add the matchup history:
+         var count = 1;
 			var $table = $('<table>');
 			$table.attr('cellspacing', '0');
 			$table.attr('cellpadding', '4');
 			$table.css('width', $(infoBoxContent).width() - 10);
-			
-			/*
-			var $headerRow = $('<tr>');
-			$headerRow.addClass('black-header-row');
-			
-			$table.append($headerRow.append(
-				$('<th>')
-					.attr('width', '1%'),
-							
-				$('<th>')
-					.attr('width', '1%'),
-								
-				$('<th>')
-					.attr('width', '1%'),
-								
-				$('<th>')
-			));
-			*/
 			
 			$(xml).find("team").find("weeks").find("week").each(function() {
 				var $row = $('<tr>');
@@ -222,7 +231,7 @@ function showTeamInfoBox(teamId, year) {
 				));
 			});
 			
-			$(infoBoxContent).empty().append($table);
+			$(infoBoxContent).empty().append($rankDiv).append($table);
 		},
 
 		error: function() { }
