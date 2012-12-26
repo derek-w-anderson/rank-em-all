@@ -11,6 +11,13 @@ class Record(db.Model):
    wins = db.IntegerProperty()
    losses = db.IntegerProperty()
    ties = db.IntegerProperty()
+   pts_for = db.IntegerProperty()
+   pts_against = db.IntegerProperty()
+   streak = db.IntegerProperty()
+   off_pass_rank = db.IntegerProperty()
+   off_rush_rank = db.IntegerProperty()
+   def_pass_rank = db.IntegerProperty()
+   def_rush_rank = db.IntegerProperty()
    dvoa = db.StringProperty()
    last_updated = db.DateTimeProperty(auto_now=True)
         
@@ -50,6 +57,6 @@ class UserProfile(db.Model):
    last_updated = db.DateTimeProperty(auto_now=True)
    
 class AppSetting(db.Model):
-	value = db.StringProperty()
+   value = db.StringProperty()
 	
 	

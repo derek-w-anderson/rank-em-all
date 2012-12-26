@@ -17,6 +17,9 @@ handlers:
   
 - url: /scripts
   static_dir: static/js
+
+- url: /swf
+  static_dir: static/swf
   
 - url: /rank
   script: views.app

@@ -189,25 +189,42 @@ def query_rankings(year, week, user):
    for i, team in enumerate(teams):
       team_id = team.key().name()
    
-      # Get team record:
+      # Get team record, net points and current streak:
       record_obj = records[team_id]
-      dvoa = '-'
-      if record_obj.dvoa:
-         dvoa = record_obj.dvoa
-      record = str(record_obj.wins) + '-' + str(record_obj.losses)
-      if (record_obj.ties > 0):
-         record += '-' + str(record_obj.ties)
+        
+      record = '-'
+      if record_obj: 
+         record = str(record_obj.wins) + '-' + str(record_obj.losses)
+         if record_obj.ties > 0:
+            record += '-' + str(record_obj.ties)
+
+      net_pts = '0'
+      if record_obj:
+         value = record_obj.pts_for - record_obj.pts_against
+         if value > 0:
+            net_pts = '<span class="green">+' + str(value) + '</span>'
+         elif value < 0:
+            net_pts = '<span class="red">' + str(value) + '</span>'
+
+      streak = '-' 
+      if record_obj:
+         if record_obj.streak > 0:
+            streak = '<span class="green">' + str(record_obj.streak) + 'W</span>'
+         elif record_obj.streak < 0:
+            streak = '<span class="red">' + str(abs(record_obj.streak)) + 'L</span>'
+            
+      dvoa = '-' if not record_obj or not record_obj.dvoa else record_obj.dvoa     
       
       # Get team matchup:
       match_obj = None if not matchups.has_key(team_id) else matchups[team_id]
       matchup = ''
       if match_obj and match_obj.result:
-         span_class = ''
-         if match_obj.result == 'W':
-            span_class = 'green' 
-         elif match_obj.result == 'L':
-            span_class = 'red'
-         matchup = '<span class="' + span_class + '">' + match_obj.result + '</span> ' 
+         #span_class = ''
+         #if match_obj.result == 'W':
+         #   span_class = 'green' 
+         #elif match_obj.result == 'L':
+         #   span_class = 'red'
+         #matchup = '<span class="' + span_class + '">' + match_obj.result + '</span> ' 
          matchup += str(match_obj.score) + '-' + str(match_obj.opp_score) + ' '
       
       if match_obj and not match_obj.at_home:
@@ -227,8 +244,10 @@ def query_rankings(year, week, user):
          'team_id': team_id,
          'team_name': team.location + ' ' + team.nickname,
          'prev_rank': prev_rank,
-         'record': record,
          'matchup': matchup,
+         'record': record,
+         'net_pts': net_pts,
+         'streak': streak,
          'dvoa': dvoa
       }   
       
@@ -273,6 +292,19 @@ def get_team_info(year, team_id, reload=False):
       ties = SubElement(team_info, 'ties')        
       ties.text = str(record.ties)
 
+      # Add offensive/defensive ranks:
+      off_pass_rank = SubElement(team_info, 'off_pass_rank')  
+      off_pass_rank.text = ordinal(record.off_pass_rank)
+      
+      off_rush_rank = SubElement(team_info, 'off_rush_rank')  
+      off_rush_rank.text = ordinal(record.off_rush_rank)
+      
+      def_pass_rank = SubElement(team_info, 'def_pass_rank')  
+      def_pass_rank.text = ordinal(record.def_pass_rank)
+      
+      def_rush_rank = SubElement(team_info, 'def_rush_rank')  
+      def_rush_rank.text = ordinal(record.def_rush_rank)
+      
       # Add matchups:
       weeks = SubElement(team_info, 'weeks')      
       matchups = Matchup.all().filter('year =', int(year)).filter('team =', team).order('-week')
@@ -294,3 +326,27 @@ def get_team_info(year, team_id, reload=False):
       memcache.set(key, team_info)
          
    return team_info
+
+   
+def ordinal(value):
+   """
+   Converts zero or a *postive* integer to an ordinal value.
+   """
+   try:
+      value = int(value)
+   except ValueError:
+      return value
+
+   if value % 100//10 != 1:
+      if value % 10 == 1:
+         ordval = u"%d%s" % (value, "st")
+      elif value % 10 == 2:
+         ordval = u"%d%s" % (value, "nd")
+      elif value % 10 == 3:
+         ordval = u"%d%s" % (value, "rd")
+      else:
+         ordval = u"%d%s" % (value, "th")
+   else:
+      ordval = u"%d%s" % (value, "th")
+
+   return ordval

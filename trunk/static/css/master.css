@@ -21,9 +21,12 @@ div#right-col {
 
 div#right-col h1 {
 	font-size: 10px;
-    margin-top: 1px;
-    padding-right: 3px;
-    padding-top: 8px;
+}
+
+div#right-col h1 {
+   margin-top: 1px;
+   padding-right: 3px;
+   padding-top: 8px;
 }
 
 div#right-col p {
@@ -117,6 +120,32 @@ table#ranking-table tr.odd {
 	background-color: white;
 }
 
+div.offdef-rank-container {
+   padding-bottom: 10px;
+}
+
+div.offdef-rank-container table {
+   color: white;
+   width: 98%;
+}
+
+div.offdef-rank-container th {
+   text-align: left;
+   width: 50%;
+   padding-left: 0;
+}
+
+div.offdef-rank-container td {
+   font-size: 10px;
+   padding-left: 0;
+   padding-right: 0;
+}
+
+div.offdef-rank-container td:first-child,
+div.offdef-rank-container td:first-child + td + td {
+   width: 1%;
+}
+
 table#ranking-table tr.drag-row {
 	color: black;
 	background-color: #FF6633;
@@ -135,22 +164,24 @@ table#ranking-table td.rank-cell {
 
 table#ranking-table td.delta-cell,
 table#ranking-table td.avg-cell,
-table#ranking-table td.dvoa-cell {
-	text-align: center;
-}
-
-table#ranking-table td.delta-cell {
-	/*padding-left: 6px;*/
-}
-
+table#ranking-table td.dvoa-cell,
+table#ranking-table td.netpts-cell,
+table#ranking-table td.streak-cell,
 table#ranking-table td.record-cell {
-	padding-left: 8px;
-	padding-right: 10px;
 	text-align: center;
 }
 
 table#ranking-table td.matchup-cell {
 	padding-right: 6px;
+}
+
+table#ranking-table td.team-cell {
+	/*
+	background-image: url(/images/logo-nfl-teams-medium-vert-2.png);
+	background-repeat: no-repeat;
+	padding-left: 28px;
+	*/
+	padding-right: 8px;
 }
 
 select#week-select {
@@ -167,7 +198,8 @@ div#button-container {
 	padding-top: 8px;
 }
 
-div#button-container input {
+div#button-container input,
+input#copy-button {
 	font-family: verdana, sans-serif;
 	font-size: 10px;
 }
@@ -177,6 +209,12 @@ div#button-container input#reset-button {
 	float: right;
 	margin-left: 6px;
 	margin-right: -1px;
+}
+
+input#copy-button {
+   float: right;
+   margin-top: 4px;
+   margin-right: 6px;
 }
 
 div#button-container input#toggle-avg-button,
@@ -224,15 +262,6 @@ a.clickable-header:visited {
 img#bg { position: fixed; top: 0; left: 0; }
 img.bgwidth { width: 100%; }
 img.bgheight { height: 100%; }
-
-table#ranking-table td.team-cell {
-	/*
-	background-image: url(/images/logo-nfl-teams-medium-vert-2.png);
-	background-repeat: no-repeat;
-	padding-left: 28px;
-	*/
-	padding-right: 8px;
-}
 
 /*
 table#ranking-table td#ARI { background-position: 2px 1px; }

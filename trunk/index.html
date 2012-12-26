@@ -1,12 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="en-US">
   <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <meta content="A tool for /r/NFLPowerRankers." name="description">
-    <title>Rank 'Em All</title>
-  	<link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta content="A tool for /r/NFLPowerRankers." name="description">
+  <title>Rank 'Em All</title>
+  
+  <link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 	<script type="text/javascript" src="/scripts/jquery.tablednd_0_5.js"></script>
+   <script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
+   <!--<script type="text/javascript" src="/scripts/ZeroClipboard.js"></script>-->
 	<script type="text/javascript" src="/scripts/rank-em.js"></script>
 	<script type="text/javascript">
 	function sortByRecord() {
@@ -135,15 +138,37 @@
 			$('#export-list').val().substring(0, $('#export-list').val().length - 1)
 		);
 	}
+   
+   /*
+   ZeroClipboard.setMoviePath('./swf/ZeroClipboard.swf');
+   
+   var zeroclip;    
+   $(document).ready(function() {
+      if (swfobject.hasFlashPlayerVersion("9")) {
+         $('#copy-button').show();
+         
+         zeroclip = new ZeroClipboard.Client();
+         zeroclip.addEventListener('mouseDown', function(client) {
+            zeroclip.setText($('#export-list').val());
+         });
+         zeroclip.glue('copy-button');
+      }
+   });
+   */
 	</script>
   </head>
   <body onload="adjustRankAndRowColor(false, false)">
   	{% set right_col_width = 150 %}
-
-	{% set left_col_width = 450 if not has_prev_ranks else 485 %}
+	{% set left_col_width = 530 %}
+   
+   {% if not has_prev_ranks %}
+      {% set left_col_width = left_col_width - 35 %}
+   {% endif %}   
+      
 	{% if not display_avg %}
 		{% set left_col_width = left_col_width - 35 %}
 	{% endif %}
+   
 	{% if not display_dvoa %}
 		{% set left_col_width = left_col_width - 40 %}
 	{% endif %}
@@ -169,7 +194,7 @@
 				<th style="display: none"></th>
 
 				<!-- Delta -->
-				<th width="8%" nowrap="nowrap">Δ</th>
+				<th width="7%" nowrap="nowrap">Δ</th>
 				{% endif %}
 
 				<!-- Average rank -->
@@ -186,9 +211,15 @@
 				<th width="1%" nowrap="nowrap">
 					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
 				</th>
+            
+				<!-- Net Points -->
+				<th width="1%" nowrap="nowrap">Pts</th>
 
+            <!-- Streak -->
+				<th width="1%" nowrap="nowrap">Strk</th>
+            
 				<!-- Weekly matchup -->
-				<th nowrap="nowrap" style="text-align: left">
+				<th nowrap="nowrap" style="text-align:left; padding-bottom:2px">
 				  Week
 				  <select id="week-select" onchange="changeWeek(this);">
 				  {% for i in range(1, current_week+1) %}
@@ -247,6 +278,12 @@
 				<!-- Record -->
 				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
 
+            <!-- Net Points -->
+				<td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
+            
+            <!-- Streak -->
+				<td nowrap="nowrap" class="streak-cell">{{ rankings[rank]['streak'] }}</td>
+            
 				<!-- Weekly matchup -->
 				<td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td>
 
@@ -285,6 +322,8 @@
 			<p>Drag and drop teams to rank 'em, then save.</p>
 			<p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
 			<textarea cols="3" rows="33" id="export-list" readonly="readyonly"></textarea>
+         <br />
+         <input type="button" id="copy-button" value="copy" style="display:none" />
 		</div> <!-- right-col -->
 
 		<div style="clear: both; padding-bottom: 6px" />
