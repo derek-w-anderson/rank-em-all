@@ -242,6 +242,7 @@ def query_rankings(year, week, user):
                
       rankings[rank] = {
          'team_id': team_id,
+         'team_logo_url': team.logo_url,
          'team_name': team.location + ' ' + team.nickname,
          'prev_rank': prev_rank,
          'matchup': matchup,

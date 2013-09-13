@@ -1,5 +1,5 @@
-application: power-ranking
-version: 6
+application: power-ranking-dst
+version: 7
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -10,19 +10,18 @@ inbound_services:
 libraries:
 - name: jinja2
   version: latest
-
+  
 handlers:
 - url: /stylesheets
   static_dir: static/css
   
-- url: /images
-  static_dir: static/images
-  
 - url: /scripts
   static_dir: static/js
-
-- url: /swf
-  static_dir: static/swf
+  
+#- url: /images/(.*\.(png))
+#  static_files: static/images/\1
+#  upload: static/images/(.*\.(png))
+#  mime_type: png
   
 - url: /rank
   script: views.app
