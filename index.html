@@ -9,309 +9,310 @@
   
   <body onload="adjustRankAndRowColor(false, false)">
   {% set right_col_width = 150 %}
-	{% set left_col_width = 480 %} <!-- Change this back to 530 when images are working again... -->
+  {% set left_col_width = 520 %} 
    
-   {% if not has_prev_ranks %}
-      {% set left_col_width = left_col_width - 35 %}
-   {% endif %}   
+  {% if not has_prev_ranks %}
+    {% set left_col_width = left_col_width - 35 %}
+  {% endif %}   
       
-	{% if not display_avg %}
-		{% set left_col_width = left_col_width - 35 %}
-	{% endif %}
+  {% if not display_avg %}
+    {% set left_col_width = left_col_width - 35 %}
+  {% endif %}
    
-	{% if not display_dvoa %}
-		{% set left_col_width = left_col_width - 40 %}
-	{% endif %}
+  {% if not display_dvoa %}
+    {% set left_col_width = left_col_width - 40 %}
+  {% endif %}
    
-	{% set container_width = right_col_width + left_col_width + 26 %}
+  {% set container_width = right_col_width + left_col_width + 26 %}
 
-	<div id="container" style="width: {{ container_width }}px;" >
-		<div id="left-col" style="width: {{ left_col_width }}px;">
-			<form action="/rank?week={{ selected_week }}" method="post">
-			<table id="ranking-table" cellspacing="0" cellpadding="4">
-			  <tr class="nodrag nodrop black-header-row">
-				<!-- Rank -->
-				<th width="1%" nowrap="nowrap" style="text-align: right;">#</th>
+  <div id="container" style="width: {{ container_width }}px;" >
+    <div id="left-col" style="width: {{ left_col_width }}px;">
+      <form action="/rank?week={{ selected_week }}" method="post">
+      <table id="ranking-table" cellspacing="0" cellpadding="4">
+        <tr class="nodrag nodrop black-header-row">
+        <!-- Rank -->
+        <th width="1%" nowrap="nowrap" style="text-align: right;">#</th>
 
-				<!-- Original rank -->
-				<th style="display: none"></th>
+        <!-- Original rank -->
+        <th style="display: none"></th>
 
-				<!-- Team logo/name -->
-				<th width="1%" nowrap="nowrap" colspan="2" style="text-align: left;">Team</th>
+        <!-- Team logo/name -->
+        <th width="1%" nowrap="nowrap" colspan="2" style="text-align: left;">Team</th>
 
-				{% if has_prev_ranks %}
-				<!-- Last week's rank -->
-				<th style="display: none"></th>
+        {% if has_prev_ranks %}
+        <!-- Last week's rank -->
+        <th style="display: none"></th>
 
-				<!-- Delta -->
-				<th width="7%" nowrap="nowrap">Δ</th>
-				{% endif %}
+        <!-- Delta -->
+        <th width="7%" nowrap="nowrap">Δ</th>
+        {% endif %}
 
-				<!-- Average rank -->
-				<th width="1%" nowrap="nowrap" {% if not display_avg %}style="display: none"{% endif %}>
-					<a href="javascript:;" class="clickable-header" {% if avg_rankings %}onclick="sortByAverageRank()"{% endif %}>Avg</a>
-				</th>
-
-            <!-- DVOA -->
-				<th width="1%" nowrap="nowrap" {% if not display_dvoa %}style="display: none"{% endif %}>
-					<a href="javascript:;" class="clickable-header" onclick="sortByDVOA()">DVOA</a>
-				</th>
-            
-				<!-- Record -->
-				<th width="1%" nowrap="nowrap">
-					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
-				</th>
-            
-				<!-- Net Points -->
-				<th width="1%" nowrap="nowrap">Pts</th>
-
-            <!-- Streak -->
-				<th width="1%" nowrap="nowrap">Strk</th>
-            
-				<!-- Weekly matchup -->
-				<th nowrap="nowrap" style="text-align:left; padding-bottom:2px">
-				  Week
-				  <select id="week-select" onchange="changeWeek(this);">
-				  {% for i in range(1, current_week+1) %}
-					<option value="{{ i }}" {% if selected_week == i %}selected="selected"{% endif %}>
-					  {{ i }}
-					</option>
-				  {% endfor %}
-				  </select>
-				</th>
-
-				<!-- Up/down buttons -->
-				<th width="1%"></th>
-			  </tr>
-			  {% for rank in range(1, 33) %}
-			  <tr id="{{ rank }}" class={% if rank % 2 == 0 %}"even"{% else %}"odd"{% endif %}>
-				<!-- Rank -->
-				<td nowrap="nowrap" class="rank-cell">{{ rank }}</td>
-
-				<!-- Original rank -->
-				<td style="display: none">{{ rank }}</td>
-
-				<!-- Team logo -->
-				<td style="padding: 0 2px 0 2px"><a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})"><!--<img style="border: 0; text-decoration: none;" src="/images/{{ rankings[rank]['team_id'] }}.png" height="18" width="18" alt="" />--></a></td>
-
-				<!-- Team name -->
-				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>
-
-				{% if has_prev_ranks %}
-				<!-- Last week's rank -->
-				<td style="display: none">{{ rankings[rank]['prev_rank'] }}</td>
-
-				<!-- Delta -->
-				<td nowrap="nowrap" class="delta-cell">
-				  {% if rank < rankings[rank]['prev_rank'] %}
-				    <span class="green">+{{ rankings[rank]['prev_rank'] - rank }}</span>
-				  {% elif rank > rankings[rank]['prev_rank'] %}
-				    <span class="red">{{ rankings[rank]['prev_rank'] - rank }}</span>
-				  {% else %}
-				    -
-				  {% endif %}
-				</td>
-				{% endif %}
-
-				<!-- Average rank -->
-				<td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
-				  {% if not avg_rankings or not avg_rankings.has_key(rankings[rank]['team_id']) %}
-					 -
-				  {% else %}
-				    {{ avg_rankings[rankings[rank]['team_id']].rank }}
-				  {% endif %}
-				</td>
+        <!-- Average rank -->
+        <th width="1%" nowrap="nowrap" {% if not display_avg %}style="display: none"{% endif %}>
+          <a href="javascript:;" class="clickable-header" {% if avg_rankings %}onclick="sortByAverageRank()"{% endif %}>Avg</a>
+        </th>
 
         <!-- DVOA -->
-				<td nowrap="nowrap" class="dvoa-cell" {% if not display_dvoa %}style="display: none"{% endif %}>{{ rankings[rank]['dvoa'] }}</td>
+        <th width="1%" nowrap="nowrap" {% if not display_dvoa %}style="display: none"{% endif %}>
+          <a href="javascript:;" class="clickable-header" onclick="sortByDVOA()">DVOA</a>
+        </th>
             
-				<!-- Record -->
-				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
+        <!-- Record -->
+        <th width="1%" nowrap="nowrap">
+          <a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
+        </th>
+            
+        <!-- Net Points -->
+        <th width="1%" nowrap="nowrap">Pts</th>
+
+        <!-- Streak -->
+        <th width="1%" nowrap="nowrap">Strk</th>
+            
+        <!-- Weekly matchup -->
+        <th nowrap="nowrap" style="text-align:left; padding-bottom:2px">
+          Week
+          <select id="week-select" onchange="changeWeek(this);">
+          {% for i in range(1, current_week+1) %}
+          <option value="{{ i }}" {% if selected_week == i %}selected="selected"{% endif %}>
+            {{ i }}
+          </option>
+          {% endfor %}
+          </select>
+        </th>
+
+        <!-- Up/down buttons -->
+        <th width="1%"></th>
+        </tr>
+        
+        {% for rank in range(1, 33) %}
+        <tr id="{{ rank }}" class={% if rank % 2 == 0 %}"even"{% else %}"odd"{% endif %}>
+        <!-- Rank -->
+        <td nowrap="nowrap" class="rank-cell">{{ rank }}</td>
+
+        <!-- Original rank -->
+        <td style="display: none">{{ rank }}</td>
+
+        <!-- Team logo -->
+        <td style="padding: 0 2px 0 2px">
+          <a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})">
+            <img style="border: 0; text-decoration: none;" src="{{ rankings[rank]['team_logo_url'] }}" height="18" width="18" alt="" />
+          </a>
+        </td>
+
+        <!-- Team name -->
+        <td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>
+
+        {% if has_prev_ranks %}
+        <!-- Last week's rank -->
+        <td style="display: none">{{ rankings[rank]['prev_rank'] }}</td>
+
+        <!-- Delta -->
+        <td nowrap="nowrap" class="delta-cell">
+          {% if rank < rankings[rank]['prev_rank'] %}
+            <span class="green">+{{ rankings[rank]['prev_rank'] - rank }}</span>
+          {% elif rank > rankings[rank]['prev_rank'] %}
+            <span class="red">{{ rankings[rank]['prev_rank'] - rank }}</span>
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        {% endif %}
+
+        <!-- Average rank -->
+        <td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
+          {% if not avg_rankings or not avg_rankings.has_key(rankings[rank]['team_id']) %}
+           -
+          {% else %}
+            {{ avg_rankings[rankings[rank]['team_id']].rank }}
+          {% endif %}
+        </td>
+
+        <!-- DVOA -->
+        <td nowrap="nowrap" class="dvoa-cell" {% if not display_dvoa %}style="display: none"{% endif %}>{{ rankings[rank]['dvoa'] }}</td>
+            
+        <!-- Record -->
+        <td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
 
         <!-- Net Points -->
-				<td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
+        <td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
             
         <!-- Streak -->
-				<td nowrap="nowrap" class="streak-cell">{{ rankings[rank]['streak'] }}</td>
+        <td nowrap="nowrap" class="streak-cell">{{ rankings[rank]['streak'] }}</td>
             
-				<!-- Weekly matchup -->
-				<td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td>
+        <!-- Weekly matchup -->
+        <td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td>
 
-				<!-- Up/down buttons -->
-				<td nowrap="nowrap" class="matchup-cell">
-          <!--
-				  <a href="javascript:;" onclick="moveUp({{ rank }})"><img src="/images/up.png" alt="up" height="11" width="11" border="0"></a>
-				  <a href="javascript:;" onclick="moveDown({{ rank }})"><img src="/images/down.png" alt="down" height="11" width="11" border="0"></a>
-          -->
+        <!-- Up/down buttons -->
+        <td nowrap="nowrap" class="matchup-cell">
+          <a href="javascript:;" onclick="moveUp({{ rank }})"><img src="//i.imgur.com/dSimbyW.png" alt="up" height="11" width="11" border="0"></a>
+          <a href="javascript:;" onclick="moveDown({{ rank }})"><img src="//i.imgur.com/c3eL1pf.png" alt="down" height="11" width="11" border="0"></a>
         </td>
-				<input type="hidden" id="hidden-{{ rankings[rank]['team_id'] }}" name="hidden-{{ rankings[rank]['team_id'] }}" value="{{ rank }}" />
-			  </tr>
-			  {% endfor %}
-			</table>
+        <input type="hidden" id="hidden-{{ rankings[rank]['team_id'] }}" name="hidden-{{ rankings[rank]['team_id'] }}" value="{{ rank }}" />
+        </tr>
+        {% endfor %}
+      </table>
       
-			<div id="button-container">
-			  <input type="button" id="toggle-avg-button" value="{% if not display_avg %}show{% else %}hide{% endif %} avg" onclick="submitDisplayAvgForm()" />
+      <div id="button-container">
+        <input type="button" id="toggle-avg-button" value="{% if not display_avg %}show{% else %}hide{% endif %} avg" onclick="submitDisplayAvgForm()" />
         <!--<input type="button" id="toggle-dvoa-button" value="{% if not display_dvoa %}show{% else %}hide{% endif %} dvoa" onclick="submitDisplayDVOAForm()" />-->
            
-			  <input type="submit" id="save-button" disabled="disabled" value="save" />
-			  <input type="button" id="reset-button" disabled="disabled" value="reset" onclick="javascript:window.location='/rank?week='+{{ selected_week }};" />
-			  <div id="status">{% if status and status == 'saved' %}Your rankings were saved.{% endif %}</div>
-			</div>
-			</form>
+        <input type="submit" id="save-button" disabled="disabled" value="save" />
+        <input type="button" id="reset-button" disabled="disabled" value="reset" onclick="javascript:window.location='/rank?week='+{{ selected_week }};" />
+        <div id="status">{% if status and status == 'saved' %}Your rankings were saved.{% endif %}</div>
+      </div>
+      </form>
 
-			<form id="update-display-avg-form" action="/update_display_avg" method="post">
-			  <input type="hidden" name="display_avg" value="{% if not display_avg %}Y{% else %}N{% endif %}" />
-			  <input type="hidden" name="week" value="{{ selected_week }}" />
-			</form>
+      <form id="update-display-avg-form" action="/update_display_avg" method="post">
+        <input type="hidden" name="display_avg" value="{% if not display_avg %}Y{% else %}N{% endif %}" />
+        <input type="hidden" name="week" value="{{ selected_week }}" />
+      </form>
          
-			<form id="update-display-dvoa-form" action="/update_display_dvoa" method="post">
-			  <input type="hidden" name="display_dvoa" value="{% if not display_dvoa %}Y{% else %}N{% endif %}" />
-			  <input type="hidden" name="week" value="{{ selected_week }}" />
-			</form>
-		</div> <!-- left-col -->
+      <form id="update-display-dvoa-form" action="/update_display_dvoa" method="post">
+        <input type="hidden" name="display_dvoa" value="{% if not display_dvoa %}Y{% else %}N{% endif %}" />
+        <input type="hidden" name="week" value="{{ selected_week }}" />
+      </form>
+    </div> <!-- left-col -->
 
-		<div id="right-col" style="width: {{ right_col_width }}px;">
-			<h1>Instructions</h1>
-			<p>Drag and drop teams to rank 'em, then save.</p>
-			<p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
-			<textarea cols="3" rows="33" id="export-list" readonly="readyonly"></textarea>
-         <br />
-         <input type="button" id="copy-button" value="copy" style="display:none" />
-		</div> <!-- right-col -->
+    <div id="right-col" style="width: {{ right_col_width }}px;">
+      <h1>Instructions</h1>
+      <p>Two ways to use this tool:</p>
+      <p>1. Drag and drop teams in the left column, or...</p>
+      <p>2. Edit the values in the text box below.</p>
+      <p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
+      <textarea cols="3" rows="33" id="export-list" ></textarea>
+    </div> <!-- right-col -->
 
-		<div style="clear: both; padding-bottom: 6px" />
-	</div> <!-- container -->
+    <div style="clear: both; padding-bottom: 6px" />
+  </div> <!-- container -->
   
-	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
-	<script type="text/javascript" src="/scripts/jquery.tablednd_0_5.js"></script>
-	<script type="text/javascript" src="/scripts/rank-em.js"></script>
-	<script type="text/javascript">
-	function sortByRecord() {
-		$('#ranking-table').each(function() {
-		var rows = $('tbody > tr:not(:first-child)', this);
-			rows.sort(function(a, b) {
-				// Sort by most wins, then least losses:
-				var recA = $('td:eq({% if has_prev_ranks %}8{% else %}6{% endif %})', a).text().split('-');
-				var recB = $('td:eq({% if has_prev_ranks %}8{% else %}6{% endif %})', b).text().split('-');
-				var winA = parseInt(recA[0]);
-				var winB = parseInt(recB[0]);
-				var lossA = parseInt(recA[1]);
-				var lossB = parseInt(recB[1]);
-				if (winA > winB) return -1;
-				if (winA < winB) return 1;
-				if (lossA < lossB) return -1;
-				if (lossA > lossB) return 1;
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+  <script type="text/javascript" src="/scripts/jquery.tablednd_0_5.js"></script>
+  <script type="text/javascript" src="/scripts/rank-em.js"></script>
+  <script type="text/javascript">
+  function sortByRecord() {
+    $('#ranking-table').each(function() {
+    var rows = $('tbody > tr:not(:first-child)', this);
+      rows.sort(function(a, b) {
+        // Sort by most wins, then least losses:
+        var recA = $('td:eq({% if has_prev_ranks %}8{% else %}6{% endif %})', a).text().split('-');
+        var recB = $('td:eq({% if has_prev_ranks %}8{% else %}6{% endif %})', b).text().split('-');
+        var winA = parseInt(recA[0]);
+        var winB = parseInt(recB[0]);
+        var lossA = parseInt(recA[1]);
+        var lossB = parseInt(recB[1]);
+        if (winA > winB) return -1;
+        if (winA < winB) return 1;
+        if (lossA < lossB) return -1;
+        if (lossA > lossB) return 1;
 
-				// If same record, sort by team nickname:
-				var fullnameA = $('td:eq(3)', a).text();
-				var fullnameB = $('td:eq(3)', b).text();
-				var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
-				var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
-				if (nicknameA < nicknameB) return -1;
-				if (nicknameA > nicknameB) return 1;
+        // If same record, sort by team nickname:
+        var fullnameA = $('td:eq(3)', a).text();
+        var fullnameB = $('td:eq(3)', b).text();
+        var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
+        var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
+        if (nicknameA < nicknameB) return -1;
+        if (nicknameA > nicknameB) return 1;
 
-				return 0;
-			});
-			$.each(rows, function(index, row) {
-				$('#ranking-table').append(row);
-			});
-		});
-		clearTeamInfoBox();
-		adjustRankAndRowColor(true, true);
-	}
+        return 0;
+      });
+      $.each(rows, function(index, row) {
+        $('#ranking-table').append(row);
+      });
+    });
+    clearTeamInfoBox();
+    adjustRankAndRowColor(true, true);
+  }
 
-	function sortByAverageRank() {
-		$('#ranking-table').each(function() {
-			var rows = $('tbody > tr:not(:first-child)', this);
-			rows.sort(function(a, b) {
-				// Sort by most wins, then least losses:
-				var avgA = parseFloat($('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', a).text());
-				var avgB = parseFloat($('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', b).text());
-				if (avgA > avgB) return 1;
-				if (avgA < avgB) return -1;
+  function sortByAverageRank() {
+    $('#ranking-table').each(function() {
+      var rows = $('tbody > tr:not(:first-child)', this);
+      rows.sort(function(a, b) {
+        var avgA = parseFloat($('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', a).text());
+        var avgB = parseFloat($('td:eq({% if has_prev_ranks %}6{% else %}4{% endif %})', b).text());
+        if (avgA > avgB) return 1;
+        if (avgA < avgB) return -1;
 
-				// If same average rank, sort by team nickname:
-				var fullnameA = $('td:eq(3)', a).text();
-				var fullnameB = $('td:eq(3)', b).text();
-				var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
-				var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
-				if (nicknameA < nicknameB) return -1;
-				if (nicknameA > nicknameB) return 1;
+        // If same average rank, sort by team nickname:
+        var fullnameA = $('td:eq(3)', a).text();
+        var fullnameB = $('td:eq(3)', b).text();
+        var nicknameA = fullnameA.substring(fullnameA.lastIndexOf(' '), fullnameA.length);
+        var nicknameB = fullnameB.substring(fullnameB.lastIndexOf(' '), fullnameB.length);
+        if (nicknameA < nicknameB) return -1;
+        if (nicknameA > nicknameB) return 1;
 
-				return 0;
-			});
-			$.each(rows, function(index, row) {
-				$('#ranking-table').append(row);
-			});
-		});
-		clearTeamInfoBox();
-		adjustRankAndRowColor(true, true);
-	}
-	
-	function adjustRankAndRowColor(enableButtons, fromSortFunction) {
-		var teams = {};
+        return 0;
+      });
+      $.each(rows, function(index, row) {
+        $('#ranking-table').append(row);
+      });
+    });
+    clearTeamInfoBox();
+    adjustRankAndRowColor(true, true);
+  }
+  
+  function adjustRankAndRowColor(enableButtons, fromSortFunction) {
+    var teams = {};
 
-		var count = 1;
-		$('#ranking-table > tbody > tr:not(:first-child)').each(function() {
-			$(this).find('td:eq(0)').text(count);
-			if (fromSortFunction) {
-				$(this).find('td:eq(1)').text(count);
-			}
+    var count = 1;
+    $('#ranking-table > tbody > tr:not(:first-child)').each(function() {
+      $(this).find('td:eq(0)').text(count);
+      if (fromSortFunction) {
+        $(this).find('td:eq(1)').text(count);
+      }
 
-			// Fix row color:
-			$(this).removeClass('even');
-			$(this).removeClass('odd');
-			var origRank = parseInt($(this).find('td:eq(1)').text());
-			if (!$(this).hasClass('moved') || (count == origRank)) {
-				$(this).removeClass('moved');
-				$(this).addClass((count % 2 == 0) ? 'even' : 'odd');
-			}
+      // Fix row color:
+      $(this).removeClass('even');
+      $(this).removeClass('odd');
+      var origRank = parseInt($(this).find('td:eq(1)').text());
+      if (!$(this).hasClass('moved') || (count == origRank)) {
+        $(this).removeClass('moved');
+        $(this).addClass((count % 2 == 0) ? 'even' : 'odd');
+      }
 
-			{% if has_prev_ranks %}
-			// Update delta value:
-			if (enableButtons) {
-				var rank = parseInt($(this).find('td:eq(0)').text());
-				var prevRank = parseInt($(this).find('td:eq(4)').text());
-				if (rank < prevRank) {
-					$(this).find('td:eq(5)').html('<span class="green">+' + (prevRank - rank) + '</span>');
-				} else if (rank > prevRank) {
-					$(this).find('td:eq(5)').html('<span class="red">' + (prevRank - rank) + '</span>');
-				} else {
-					$(this).find('td:eq(5)').html('-');
-				}
-			}
-			{% endif %}
+      {% if has_prev_ranks %}
+      // Update delta value:
+      if (enableButtons) {
+        var rank = parseInt($(this).find('td:eq(0)').text());
+        var prevRank = parseInt($(this).find('td:eq(4)').text());
+        if (rank < prevRank) {
+          $(this).find('td:eq(5)').html('<span class="green">+' + (prevRank - rank) + '</span>');
+        } else if (rank > prevRank) {
+          $(this).find('td:eq(5)').html('<span class="red">' + (prevRank - rank) + '</span>');
+        } else {
+          $(this).find('td:eq(5)').html('-');
+        }
+      }
+      {% endif %}
 
-			// Update hidden form element:
-			var teamId = $(this).find('td:eq(3)').attr('id');
-			$('#hidden-'+teamId).val(count);
+      // Update hidden form element:
+      var teamId = $(this).find('td:eq(3)').prop('id');
+      $('#hidden-'+teamId).val(count);
 
-			// Store team/rank for export list:
-			var name = $(this).find('td:eq(3)').text();
-			var nameArr = name.split(' ');
-			var teamNickname = nameArr[nameArr.length - 1];
-			teams[teamNickname] = count;
+      // Store team/rank for export list:
+      var name = $(this).find('td:eq(3)').text();
+      var nameArr = name.split(' ');
+      var teamNickname = nameArr[nameArr.length - 1];
+      teams[teamNickname] = count;
 
-			count++;
-		});
+      count++;
+    });
 
-		if (enableButtons) {
-			$('#save-button').attr('disabled', '');
-			$('#reset-button').attr('disabled', '');
-			$('#status').css('display', 'none');
-		}
-
-		// Reset export list:
-		$('#export-list').val('');
-		var sortedTeamIds = keys(teams).sort();
-		for (var i = 0; i < sortedTeamIds.length; i++) {
-			var newVal = $('#export-list').val() + teams[sortedTeamIds[i]] + '\n';
-			$('#export-list').val(newVal);
-		}
-		$('#export-list').val(
-			$('#export-list').val().substring(0, $('#export-list').val().length - 1)
-		);
-	}
-	</script>
+    if (enableButtons) {
+      $('#save-button').prop('disabled', '');
+      $('#reset-button').prop('disabled', '');
+      $('#status').css('display', 'none');
+    }
+    // Fix the export list:
+    $('#export-list').val('');
+    var sortedTeamIds = keys(teams).sort();
+    for (var i = 0; i < sortedTeamIds.length; i++) {
+      var newVal = $('#export-list').val() + teams[sortedTeamIds[i]] + '\n';
+      $('#export-list').val(newVal);
+    }
+    $('#export-list').val(
+      $('#export-list').val().substring(0, $('#export-list').val().length - 1)
+    );
+  }
+  </script>
   </body>
 </html>

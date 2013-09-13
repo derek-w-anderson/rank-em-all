@@ -3,6 +3,7 @@ from google.appengine.ext import db
 class Team(db.Model):
    location = db.StringProperty()
    nickname = db.StringProperty()
+   logo_url = db.StringProperty()
    last_updated = db.DateTimeProperty(auto_now=True)
 
 class Record(db.Model):
