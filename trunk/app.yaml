@@ -1,4 +1,4 @@
-application: power-ranking-dst
+application: power-ranking
 version: 7
 runtime: python27
 api_version: 1
