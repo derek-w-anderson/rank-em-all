@@ -87,7 +87,7 @@ function keys(obj) {
 	return keys;
 }
 
-var loadGif = $('<img />').attr('src', '/images/ajax-loader.gif').attr('alt', 'loading');
+//var loadGif = $('<img />').attr('src', '/images/ajax-loader.gif').attr('alt', 'loading');
 var currentTeamId = '';
 
 function showTeamInfoBox(teamId, year) {
