@@ -157,10 +157,10 @@ class MatchupAndRecordUpdater(web.RequestHandler):
                'at_home': True if team1.getAttribute('isHome') == '1' else False,
                'result': None
             }
-            teams[team1_id]['off_pass_rank'] = int(team1.getAttribute('passOffenseRank'))
-            teams[team1_id]['off_rush_rank'] = int(team1.getAttribute('rushOffenseRank'))
-            teams[team1_id]['def_pass_rank'] = int(team1.getAttribute('passDefenseRank'))
-            teams[team1_id]['def_rush_rank'] = int(team1.getAttribute('rushDefenseRank'))
+            teams[team1_id]['off_pass_rank'] = int(team1.getAttribute('passOffenseRank') or "0")
+            teams[team1_id]['off_rush_rank'] = int(team1.getAttribute('rushOffenseRank') or "0")
+            teams[team1_id]['def_pass_rank'] = int(team1.getAttribute('passDefenseRank') or "0")
+            teams[team1_id]['def_rush_rank'] = int(team1.getAttribute('rushDefenseRank') or "0")
             
             teams[team2_id]['weeks'][week] = {
                'score': 0,
@@ -170,10 +170,10 @@ class MatchupAndRecordUpdater(web.RequestHandler):
                'at_home': True if team2.getAttribute('isHome') == '1' else False,
                'result': None
             }
-            teams[team2_id]['off_pass_rank'] = int(team2.getAttribute('passOffenseRank'))
-            teams[team2_id]['off_rush_rank'] = int(team2.getAttribute('rushOffenseRank'))
-            teams[team2_id]['def_pass_rank'] = int(team2.getAttribute('passDefenseRank'))
-            teams[team2_id]['def_rush_rank'] = int(team2.getAttribute('rushDefenseRank'))
+            teams[team2_id]['off_pass_rank'] = int(team2.getAttribute('passOffenseRank') or "0")
+            teams[team2_id]['off_rush_rank'] = int(team2.getAttribute('rushOffenseRank') or "0")
+            teams[team2_id]['def_pass_rank'] = int(team2.getAttribute('passDefenseRank') or "0")
+            teams[team2_id]['def_rush_rank'] = int(team2.getAttribute('rushDefenseRank') or "0")
             
             if int(matchup.getAttribute('gameSecondsRemaining')) == 0:
                teams[team1_id]['weeks'][week]['score'] = int(team1.getAttribute('score'))

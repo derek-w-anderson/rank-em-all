@@ -1,15 +1,189 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html lang="en-US">
   <head>
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <meta content="A tool for /r/NFLPowerRankers." name="description">
-  <title>Rank 'Em All</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta content="A tool for /r/NFLPowerRankers." name="description">
+    <title>Rank 'Em All</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
+  </head>
   
-  <link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
+  <body onload="adjustRankAndRowColor(false, false)">
+  {% set right_col_width = 150 %}
+	{% set left_col_width = 480 %} <!-- Change this back to 530 when images are working again... -->
+   
+   {% if not has_prev_ranks %}
+      {% set left_col_width = left_col_width - 35 %}
+   {% endif %}   
+      
+	{% if not display_avg %}
+		{% set left_col_width = left_col_width - 35 %}
+	{% endif %}
+   
+	{% if not display_dvoa %}
+		{% set left_col_width = left_col_width - 40 %}
+	{% endif %}
+   
+	{% set container_width = right_col_width + left_col_width + 26 %}
+
+	<div id="container" style="width: {{ container_width }}px;" >
+		<div id="left-col" style="width: {{ left_col_width }}px;">
+			<form action="/rank?week={{ selected_week }}" method="post">
+			<table id="ranking-table" cellspacing="0" cellpadding="4">
+			  <tr class="nodrag nodrop black-header-row">
+				<!-- Rank -->
+				<th width="1%" nowrap="nowrap" style="text-align: right;">#</th>
+
+				<!-- Original rank -->
+				<th style="display: none"></th>
+
+				<!-- Team logo/name -->
+				<th width="1%" nowrap="nowrap" colspan="2" style="text-align: left;">Team</th>
+
+				{% if has_prev_ranks %}
+				<!-- Last week's rank -->
+				<th style="display: none"></th>
+
+				<!-- Delta -->
+				<th width="7%" nowrap="nowrap">Δ</th>
+				{% endif %}
+
+				<!-- Average rank -->
+				<th width="1%" nowrap="nowrap" {% if not display_avg %}style="display: none"{% endif %}>
+					<a href="javascript:;" class="clickable-header" {% if avg_rankings %}onclick="sortByAverageRank()"{% endif %}>Avg</a>
+				</th>
+
+            <!-- DVOA -->
+				<th width="1%" nowrap="nowrap" {% if not display_dvoa %}style="display: none"{% endif %}>
+					<a href="javascript:;" class="clickable-header" onclick="sortByDVOA()">DVOA</a>
+				</th>
+            
+				<!-- Record -->
+				<th width="1%" nowrap="nowrap">
+					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
+				</th>
+            
+				<!-- Net Points -->
+				<th width="1%" nowrap="nowrap">Pts</th>
+
+            <!-- Streak -->
+				<th width="1%" nowrap="nowrap">Strk</th>
+            
+				<!-- Weekly matchup -->
+				<th nowrap="nowrap" style="text-align:left; padding-bottom:2px">
+				  Week
+				  <select id="week-select" onchange="changeWeek(this);">
+				  {% for i in range(1, current_week+1) %}
+					<option value="{{ i }}" {% if selected_week == i %}selected="selected"{% endif %}>
+					  {{ i }}
+					</option>
+				  {% endfor %}
+				  </select>
+				</th>
+
+				<!-- Up/down buttons -->
+				<th width="1%"></th>
+			  </tr>
+			  {% for rank in range(1, 33) %}
+			  <tr id="{{ rank }}" class={% if rank % 2 == 0 %}"even"{% else %}"odd"{% endif %}>
+				<!-- Rank -->
+				<td nowrap="nowrap" class="rank-cell">{{ rank }}</td>
+
+				<!-- Original rank -->
+				<td style="display: none">{{ rank }}</td>
+
+				<!-- Team logo -->
+				<td style="padding: 0 2px 0 2px"><a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})"><!--<img style="border: 0; text-decoration: none;" src="/images/{{ rankings[rank]['team_id'] }}.png" height="18" width="18" alt="" />--></a></td>
+
+				<!-- Team name -->
+				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>
+
+				{% if has_prev_ranks %}
+				<!-- Last week's rank -->
+				<td style="display: none">{{ rankings[rank]['prev_rank'] }}</td>
+
+				<!-- Delta -->
+				<td nowrap="nowrap" class="delta-cell">
+				  {% if rank < rankings[rank]['prev_rank'] %}
+				    <span class="green">+{{ rankings[rank]['prev_rank'] - rank }}</span>
+				  {% elif rank > rankings[rank]['prev_rank'] %}
+				    <span class="red">{{ rankings[rank]['prev_rank'] - rank }}</span>
+				  {% else %}
+				    -
+				  {% endif %}
+				</td>
+				{% endif %}
+
+				<!-- Average rank -->
+				<td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
+				  {% if not avg_rankings or not avg_rankings.has_key(rankings[rank]['team_id']) %}
+					 -
+				  {% else %}
+				    {{ avg_rankings[rankings[rank]['team_id']].rank }}
+				  {% endif %}
+				</td>
+
+        <!-- DVOA -->
+				<td nowrap="nowrap" class="dvoa-cell" {% if not display_dvoa %}style="display: none"{% endif %}>{{ rankings[rank]['dvoa'] }}</td>
+            
+				<!-- Record -->
+				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
+
+        <!-- Net Points -->
+				<td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
+            
+        <!-- Streak -->
+				<td nowrap="nowrap" class="streak-cell">{{ rankings[rank]['streak'] }}</td>
+            
+				<!-- Weekly matchup -->
+				<td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td>
+
+				<!-- Up/down buttons -->
+				<td nowrap="nowrap" class="matchup-cell">
+          <!--
+				  <a href="javascript:;" onclick="moveUp({{ rank }})"><img src="/images/up.png" alt="up" height="11" width="11" border="0"></a>
+				  <a href="javascript:;" onclick="moveDown({{ rank }})"><img src="/images/down.png" alt="down" height="11" width="11" border="0"></a>
+          -->
+        </td>
+				<input type="hidden" id="hidden-{{ rankings[rank]['team_id'] }}" name="hidden-{{ rankings[rank]['team_id'] }}" value="{{ rank }}" />
+			  </tr>
+			  {% endfor %}
+			</table>
+      
+			<div id="button-container">
+			  <input type="button" id="toggle-avg-button" value="{% if not display_avg %}show{% else %}hide{% endif %} avg" onclick="submitDisplayAvgForm()" />
+        <!--<input type="button" id="toggle-dvoa-button" value="{% if not display_dvoa %}show{% else %}hide{% endif %} dvoa" onclick="submitDisplayDVOAForm()" />-->
+           
+			  <input type="submit" id="save-button" disabled="disabled" value="save" />
+			  <input type="button" id="reset-button" disabled="disabled" value="reset" onclick="javascript:window.location='/rank?week='+{{ selected_week }};" />
+			  <div id="status">{% if status and status == 'saved' %}Your rankings were saved.{% endif %}</div>
+			</div>
+			</form>
+
+			<form id="update-display-avg-form" action="/update_display_avg" method="post">
+			  <input type="hidden" name="display_avg" value="{% if not display_avg %}Y{% else %}N{% endif %}" />
+			  <input type="hidden" name="week" value="{{ selected_week }}" />
+			</form>
+         
+			<form id="update-display-dvoa-form" action="/update_display_dvoa" method="post">
+			  <input type="hidden" name="display_dvoa" value="{% if not display_dvoa %}Y{% else %}N{% endif %}" />
+			  <input type="hidden" name="week" value="{{ selected_week }}" />
+			</form>
+		</div> <!-- left-col -->
+
+		<div id="right-col" style="width: {{ right_col_width }}px;">
+			<h1>Instructions</h1>
+			<p>Drag and drop teams to rank 'em, then save.</p>
+			<p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
+			<textarea cols="3" rows="33" id="export-list" readonly="readyonly"></textarea>
+         <br />
+         <input type="button" id="copy-button" value="copy" style="display:none" />
+		</div> <!-- right-col -->
+
+		<div style="clear: both; padding-bottom: 6px" />
+	</div> <!-- container -->
+  
 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 	<script type="text/javascript" src="/scripts/jquery.tablednd_0_5.js"></script>
-   <script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>
-   <!--<script type="text/javascript" src="/scripts/ZeroClipboard.js"></script>-->
 	<script type="text/javascript" src="/scripts/rank-em.js"></script>
 	<script type="text/javascript">
 	function sortByRecord() {
@@ -138,195 +312,6 @@
 			$('#export-list').val().substring(0, $('#export-list').val().length - 1)
 		);
 	}
-   
-   /*
-   ZeroClipboard.setMoviePath('./swf/ZeroClipboard.swf');
-   
-   var zeroclip;    
-   $(document).ready(function() {
-      if (swfobject.hasFlashPlayerVersion("9")) {
-         $('#copy-button').show();
-         
-         zeroclip = new ZeroClipboard.Client();
-         zeroclip.addEventListener('mouseDown', function(client) {
-            zeroclip.setText($('#export-list').val());
-         });
-         zeroclip.glue('copy-button');
-      }
-   });
-   */
 	</script>
-  </head>
-  <body onload="adjustRankAndRowColor(false, false)">
-  	{% set right_col_width = 150 %}
-	{% set left_col_width = 530 %}
-   
-   {% if not has_prev_ranks %}
-      {% set left_col_width = left_col_width - 35 %}
-   {% endif %}   
-      
-	{% if not display_avg %}
-		{% set left_col_width = left_col_width - 35 %}
-	{% endif %}
-   
-	{% if not display_dvoa %}
-		{% set left_col_width = left_col_width - 40 %}
-	{% endif %}
-   
-	{% set container_width = right_col_width + left_col_width + 26 %}
-
-	<div id="container" style="width: {{ container_width }}px;" >
-		<div id="left-col" style="width: {{ left_col_width }}px;">
-			<form action="/rank?week={{ selected_week }}" method="post">
-			<table id="ranking-table" cellspacing="0" cellpadding="4">
-			  <tr class="nodrag nodrop black-header-row">
-				<!-- Rank -->
-				<th width="1%" nowrap="nowrap" style="text-align: right;">#</th>
-
-				<!-- Original rank -->
-				<th style="display: none"></th>
-
-				<!-- Team logo/name -->
-				<th width="1%" nowrap="nowrap" colspan="2" style="text-align: left;">Team</th>
-
-				{% if has_prev_ranks %}
-				<!-- Last week's rank -->
-				<th style="display: none"></th>
-
-				<!-- Delta -->
-				<th width="7%" nowrap="nowrap">Δ</th>
-				{% endif %}
-
-				<!-- Average rank -->
-				<th width="1%" nowrap="nowrap" {% if not display_avg %}style="display: none"{% endif %}>
-					<a href="javascript:;" class="clickable-header" {% if avg_rankings %}onclick="sortByAverageRank()"{% endif %}>Avg</a>
-				</th>
-
-            <!-- DVOA -->
-				<th width="1%" nowrap="nowrap" {% if not display_dvoa %}style="display: none"{% endif %}>
-					<a href="javascript:;" class="clickable-header" onclick="sortByDVOA()">DVOA</a>
-				</th>
-            
-				<!-- Record -->
-				<th width="1%" nowrap="nowrap">
-					<a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
-				</th>
-            
-				<!-- Net Points -->
-				<th width="1%" nowrap="nowrap">Pts</th>
-
-            <!-- Streak -->
-				<th width="1%" nowrap="nowrap">Strk</th>
-            
-				<!-- Weekly matchup -->
-				<th nowrap="nowrap" style="text-align:left; padding-bottom:2px">
-				  Week
-				  <select id="week-select" onchange="changeWeek(this);">
-				  {% for i in range(1, current_week+1) %}
-					<option value="{{ i }}" {% if selected_week == i %}selected="selected"{% endif %}>
-					  {{ i }}
-					</option>
-				  {% endfor %}
-				  </select>
-				</th>
-
-				<!-- Up/down buttons -->
-				<th width="1%"></th>
-			  </tr>
-			  {% for rank in range(1, 33) %}
-			  <tr id="{{ rank }}" class={% if rank % 2 == 0 %}"even"{% else %}"odd"{% endif %}>
-				<!-- Rank -->
-				<td nowrap="nowrap" class="rank-cell">{{ rank }}</td>
-
-				<!-- Original rank -->
-				<td style="display: none">{{ rank }}</td>
-
-				<!-- Team logo -->
-				<td style="padding: 0 2px 0 2px"><a href="javascript:;" onclick="showTeamInfoBox('{{ rankings[rank]['team_id'] }}', {{ current_year }})"><img style="border: 0; text-decoration: none;" src="/images/{{ rankings[rank]['team_id'] }}.png" height="18" width="18" alt="" /></a></td>
-
-				<!-- Team name -->
-				<td nowrap="nowrap" class="team-cell" id="{{ rankings[rank]['team_id'] }}">{{ rankings[rank]['team_name'] }}</td>
-
-				{% if has_prev_ranks %}
-				<!-- Last week's rank -->
-				<td style="display: none">{{ rankings[rank]['prev_rank'] }}</td>
-
-				<!-- Delta -->
-				<td nowrap="nowrap" class="delta-cell">
-				  {% if rank < rankings[rank]['prev_rank'] %}
-				    <span class="green">+{{ rankings[rank]['prev_rank'] - rank }}</span>
-				  {% elif rank > rankings[rank]['prev_rank'] %}
-				    <span class="red">{{ rankings[rank]['prev_rank'] - rank }}</span>
-				  {% else %}
-				    -
-				  {% endif %}
-				</td>
-				{% endif %}
-
-				<!-- Average rank -->
-				<td nowrap="nowrap" class="avg-cell" {% if not display_avg %}style="display: none"{% endif %}>
-				  {% if not avg_rankings or not avg_rankings.has_key(rankings[rank]['team_id']) %}
-					 -
-				  {% else %}
-				    {{ avg_rankings[rankings[rank]['team_id']].rank }}
-				  {% endif %}
-				</td>
-
-            <!-- DVOA -->
-				<td nowrap="nowrap" class="dvoa-cell" {% if not display_dvoa %}style="display: none"{% endif %}>{{ rankings[rank]['dvoa'] }}</td>
-            
-				<!-- Record -->
-				<td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
-
-            <!-- Net Points -->
-				<td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
-            
-            <!-- Streak -->
-				<td nowrap="nowrap" class="streak-cell">{{ rankings[rank]['streak'] }}</td>
-            
-				<!-- Weekly matchup -->
-				<td nowrap="nowrap">{{ rankings[rank]['matchup'] }}</td>
-
-				<!-- Up/down buttons -->
-				<td nowrap="nowrap" class="matchup-cell">
-				  <a href="javascript:;" onclick="moveUp({{ rank }})"><img src="/images/up.png" alt="up" height="11" width="11" border="0"></a>
-				  <a href="javascript:;" onclick="moveDown({{ rank }})"><img src="/images/down.png" alt="down" height="11" width="11" border="0"></a>
-				</td>
-				<input type="hidden" id="hidden-{{ rankings[rank]['team_id'] }}" name="hidden-{{ rankings[rank]['team_id'] }}" value="{{ rank }}" />
-			  </tr>
-			  {% endfor %}
-			</table>
-			<div id="button-container">
-			  <input type="button" id="toggle-avg-button" value="{% if not display_avg %}show{% else %}hide{% endif %} avg" onclick="submitDisplayAvgForm()" />
-           <!--<input type="button" id="toggle-dvoa-button" value="{% if not display_dvoa %}show{% else %}hide{% endif %} dvoa" onclick="submitDisplayDVOAForm()" />-->
-           
-			  <input type="submit" id="save-button" disabled="disabled" value="save" />
-			  <input type="button" id="reset-button" disabled="disabled" value="reset" onclick="javascript:window.location='/rank?week='+{{ selected_week }};" />
-			  <div id="status">{% if status and status == 'saved' %}Your rankings were saved.{% endif %}</div>
-			</div>
-			</form>
-
-			<form id="update-display-avg-form" action="/update_display_avg" method="post">
-			  <input type="hidden" name="display_avg" value="{% if not display_avg %}Y{% else %}N{% endif %}" />
-			  <input type="hidden" name="week" value="{{ selected_week }}" />
-			</form>
-         
-			<form id="update-display-dvoa-form" action="/update_display_dvoa" method="post">
-			  <input type="hidden" name="display_dvoa" value="{% if not display_dvoa %}Y{% else %}N{% endif %}" />
-			  <input type="hidden" name="week" value="{{ selected_week }}" />
-			</form>
-		</div> <!-- left-col -->
-
-		<div id="right-col" style="width: {{ right_col_width }}px;">
-			<h1>Instructions</h1>
-			<p>Drag and drop teams to rank 'em, then save.</p>
-			<p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
-			<textarea cols="3" rows="33" id="export-list" readonly="readyonly"></textarea>
-         <br />
-         <input type="button" id="copy-button" value="copy" style="display:none" />
-		</div> <!-- right-col -->
-
-		<div style="clear: both; padding-bottom: 6px" />
-	</div> <!-- container -->
   </body>
 </html>
