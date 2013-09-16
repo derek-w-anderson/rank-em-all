@@ -35,9 +35,37 @@ div#right-col p {
 }
 
 div#right-col textarea {
-	margin-right: 3px;
+  float: right;
+  font-family: verdana, sans-serif;
+  font-size: 10px;
+  line-height: 15px;
+  border: 0;
+  height: 480px;
+  padding-top: 0;
+  padding-bottom: 0;
+  resize: none;
+  overflow: hidden;
+}
+
+div#right-col #export-list {
 	text-align: right;
 	background-color: #EFEFEF;
+  margin-right: 4px;
+  width: 30px;
+  padding-right: 2px;
+}
+
+div#right-col #export-list-labels {
+	text-align: left;
+  color: white;
+	background-color: #333;
+  width: 64px; 
+  outline: none;
+}
+@-moz-document url-prefix() { 
+  div#right-col #export-list-labels  {
+     margin-right: 2px; /* Firefox hack */
+  }
 }
 
 div.info-box-content,
@@ -102,6 +130,13 @@ div.info-box-content table,
 table#ranking-table {
 	font-size: 10px;
 	width: 100%;
+  color: black;
+}
+
+
+div.info-box-content table th,
+table#ranking-table th {
+	text-align: center;
 }
 
 div.info-box-content table tr.black-header-row,
@@ -153,6 +188,10 @@ table#ranking-table tr.drag-row {
 
 table#ranking-table tr.moved {
 	background-color: #FFFFB4;
+}
+
+table#ranking-table td {
+	text-align: left;
 }
 
 table#ranking-table td.rank-cell {
