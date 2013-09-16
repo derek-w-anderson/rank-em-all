@@ -1,10 +1,11 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+"http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en-US">
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta content="A tool for /r/NFLPowerRankers." name="description">
     <title>Rank 'Em All</title>
-    <link rel="stylesheet" type="text/css" href="/stylesheets/master.css" media="all">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/master.css?version=7.1" media="all">
   </head>
   
   <body onload="adjustRankAndRowColor(false, false)">
@@ -176,10 +177,44 @@
     <div id="right-col" style="width: {{ right_col_width }}px;">
       <h1>Instructions</h1>
       <p>Two ways to use this tool:</p>
-      <p>1. Drag and drop teams to the left, or...</p>
+      <p>1. Drag and drop the team rows, or...</p>
       <p>2. Edit the values in the text box below.</p>
       <p>To transfer, copy-paste the text below into cell {{ export_cell }}2 of your ranking sheet.</p>
-      <textarea cols="3" rows="33" id="export-list" ></textarea>
+      <div>
+<textarea rows="32" id="export-list-labels" readonly="readonly">49ers
+Bears
+Bengals
+Bills
+Broncos
+Browns
+Buccaneers
+Cardinals
+Chargers
+Chiefs
+Colts
+Cowboys
+Dolphins
+Eagles
+Falcons
+Giants
+Jaguars
+Jets
+Lions
+Packers
+Panthers
+Patriots
+Raiders
+Rams
+Ravens
+Redskins
+Saints
+Seahawks
+Steelers
+Texans
+Titans
+Vikings</textarea>
+        <textarea rows="32" id="export-list" ></textarea>
+        </div>
     </div> <!-- right-col -->
 
     <div style="clear: both; padding-bottom: 6px" />
