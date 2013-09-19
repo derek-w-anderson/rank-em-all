@@ -1,3 +1,4 @@
+import logging
 import webapp2 as web
 from urllib2 import urlopen, URLError
 from bs4 import BeautifulSoup
@@ -30,13 +31,14 @@ class CacheUpdater(web.RequestHandler):
       if cleared:
          get_teams(reload=True)
          get_records(current_year, reload=True)
+         get_setting('median-pya', reload=True)
          
          for week in range(1, current_week+1):
             get_matchups(current_year, week, reload=True)
          
          for team in get_teams():
             get_team_info(current_year, team.key().name(), reload=True)
-      
+            
          self.response.headers['Content-Type'] = 'text/plain'
          self.response.out.write(status + 'Cache updated successfully.')
       
@@ -114,7 +116,8 @@ class MatchupAndRecordUpdater(web.RequestHandler):
       teams = {}
       for week in range(1, current_week+1):
          url = api_url % (current_year, week)
-         xml = minidom.parse(urlopen(url))
+         response = urlopen(url)
+         xml = minidom.parse(response)
 
          for matchup in xml.getElementsByTagName('matchup'):
             kickoff = int(matchup.getAttribute('kickoff')) - offset
@@ -213,6 +216,18 @@ class MatchupAndRecordUpdater(web.RequestHandler):
                   teams[team2_id]['tie'] += 1
                   teams[team2_id]['streak'] = 0
 
+         response.close()
+                  
+      # Get passing stats:
+      passing_stats = self.get_passing_stats()
+      if passing_stats and len(passing_stats) == 32:
+         all_pya = sorted(passing_stats.values())
+         median_pya = (all_pya[15] + all_pya[16]) / 2.0
+      
+         setting = AppSetting.get_by_key_name('median-pya')
+         setting.value = str(median_pya)
+         setting.put()
+      
       for team_id in teams.keys():
          team = teams[team_id]
          team_obj = Team.get_by_key_name(team_id)
@@ -243,6 +258,11 @@ class MatchupAndRecordUpdater(web.RequestHandler):
          
          sos = None if not opp_games > 0 else opp_wins / float(opp_games)
          
+         # Get passing yards per attempt:
+         pya = None
+         if passing_stats:
+            pya = passing_stats[team_id]
+         
          # Update the team record object
          record = Record.get_or_insert(
             str(current_year)+'-'+team_id, # 2011-ARI
@@ -257,6 +277,7 @@ class MatchupAndRecordUpdater(web.RequestHandler):
          record.streak = team['streak']
          record.sov = sov
          record.sos = sos
+         record.pya = pya
          record.off_pass_rank = team['off_pass_rank']
          record.off_rush_rank = team['off_rush_rank']
          record.def_pass_rank = team['def_pass_rank']
@@ -282,8 +303,67 @@ class MatchupAndRecordUpdater(web.RequestHandler):
       
       # Update the cache:
       self.redirect('/tasks/update_cache?teams_updated='+('Y' if teams_updated else 'N'))
-        
-        
+
+   def get_passing_stats(self):
+      acronym_mapping = {}
+      acronym_mapping['New England Patriots']  = 'NEP'
+      acronym_mapping['Seattle Seahawks'] = 'SEA'
+      acronym_mapping['Denver Broncos'] = 'DEN'
+      acronym_mapping['San Francisco 49ers']  = 'SFO'
+      acronym_mapping['Green Bay Packers']  = 'GBP'
+      acronym_mapping['Chicago Bears'] = 'CHI'
+      acronym_mapping['New York Giants'] = 'NYG'
+      acronym_mapping['Houston Texans'] = 'HOU'
+      acronym_mapping['Baltimore Ravens'] = 'BAL'
+      acronym_mapping['Washington Redskins'] = 'WAS'
+      acronym_mapping['Atlanta Falcons'] = 'ATL'
+      acronym_mapping['Cincinnati Bengals'] = 'CIN'
+      acronym_mapping['Detroit Lions'] = 'DET'
+      acronym_mapping['Tampa Bay Buccaneers']  = 'TBB'
+      acronym_mapping['Pittsburgh Steelers'] = 'PIT'
+      acronym_mapping['Carolina Panthers'] = 'CAR'    
+      acronym_mapping['Dallas Cowboys'] = 'DAL'    
+      acronym_mapping['Minnesota Vikings'] = 'MIN'    
+      acronym_mapping['St. Louis Rams'] = 'STL'    
+      acronym_mapping['Miami Dolphins'] = 'MIA'    
+      acronym_mapping['Buffalo Bills'] = 'BUF'    
+      acronym_mapping['New Orleans Saints']  = 'NOS'  
+      acronym_mapping['San Diego Chargers']  = 'SDC'    
+      acronym_mapping['New York Jets'] = 'NYJ'    
+      acronym_mapping['Cleveland Browns'] = 'CLE'    
+      acronym_mapping['Philadelphia Eagles'] = 'PHI'    
+      acronym_mapping['Arizona Cardinals'] = 'ARI'    
+      acronym_mapping['Indianapolis Colts'] = 'IND'   
+      acronym_mapping['Tennessee Titans'] = 'TEN'   
+      acronym_mapping['Oakland Raiders'] = 'OAK'   
+      acronym_mapping['Jacksonville Jaguars'] = 'JAC'   
+      acronym_mapping['Kansas City Chiefs']  = 'KCC' 
+   
+      url = 'http://fantasydata.com/nfl-stats/team-stats.aspx?ta=0&tc=2' #ta=0 for Offense, tc=2 for Passing
+      passing_stats = None
+      try:
+         html = BeautifulSoup(urlopen(url))
+         table = html.find(id='StatsGrid')
+         if not table:
+            raise URLError(404, 'Missing stat table')    
+
+         passing_stats = {}
+         rows = table.find_all('tr')
+         for row in rows[1:]:
+            cells = row.find_all('td')
+            team_name = cells[1].string
+            
+            if cells[6].string != '0':
+               # Adjusted passing yards / (passing attempts + sacks)
+               passing_stats[acronym_mapping[team_name]] = int(cells[8].string) / float(int(cells[6].string) + int(cells[14].string))   
+            else:
+               passing_stats[acronym_mapping[team_name]] = 0.0  
+      except:
+         logging.error('Could not load passing stats from FantasyData.com')
+
+      return passing_stats
+
+   
 class TeamLoader(web.RequestHandler):
    def get(self):
       Team.get_or_insert('ARI', location='Arizona', nickname='Cardinals', logo_url='//i.imgur.com/eBCLhfo.png')
@@ -330,6 +410,7 @@ class SettingsLoader(web.RequestHandler):
    def get(self):
       AppSetting.get_or_insert('year', value='')
       AppSetting.get_or_insert('week', value='')
+      AppSetting.get_or_insert('median-pya', value='')
       
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.out.write('Settings loaded successfully.')
