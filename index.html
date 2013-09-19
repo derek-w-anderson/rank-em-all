@@ -10,7 +10,7 @@
   
   <body onload="adjustRankAndRowColor(false, false)">
   {% set right_col_width = 150 %}
-  {% set left_col_width = 540 %} 
+  {% set left_col_width = 580 %} 
    
   {% if not has_prev_ranks %}
     {% set left_col_width = left_col_width - 35 %}
@@ -60,9 +60,12 @@
         <!-- Strength of schedule -->
         <th width="1%" nowrap="nowrap" title="Strength of schedule">SOS</th>
         
+        <!-- Passing yards per attempt -->
+        <th width="1%" nowrap="nowrap" title="Passing yards per attempt">PY/A</th>
+
         <!-- Net Points -->
         <th width="1%" nowrap="nowrap" title="Net points">Pts</th>
-
+        
         <!-- Streak -->
         <th width="1%" nowrap="nowrap" title="Win-loss streak">Strk</th>
             
@@ -134,9 +137,12 @@
         <!-- Strength of schedule -->
         <td nowrap="nowrap" class="sov-cell">{{ rankings[rank]['sos'] }}</td>
         
+        <!-- Passing yards per attempt -->
+        <td nowrap="nowrap" class="sov-cell">{{ rankings[rank]['pya'] }}</td>
+
         <!-- Net points -->
         <td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
-            
+        
         <!-- Streak -->
         <td nowrap="nowrap" class="streak-cell">{{ rankings[rank]['streak'] }}</td>
             

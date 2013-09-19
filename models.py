@@ -17,6 +17,7 @@ class Record(db.Model):
    streak = db.IntegerProperty()
    sov = db.FloatProperty() # Strength of victory
    sos = db.FloatProperty() # Strength of schedule
+   pya = db.FloatProperty() # Passing yards per attempt
    off_pass_rank = db.IntegerProperty()
    off_rush_rank = db.IntegerProperty()
    def_pass_rank = db.IntegerProperty()

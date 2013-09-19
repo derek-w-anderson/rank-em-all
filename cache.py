@@ -171,6 +171,7 @@ def query_rankings(year, week, user):
    """
    Queries the datastore for team matchup, record, and ranking info. 
    """
+   median_pya = get_setting('median-pya')
    records = get_records(year, reload=True)
    matchups = get_matchups(year, week, reload=True)
             
@@ -222,6 +223,16 @@ def query_rankings(year, week, user):
       if record_obj and record_obj.sos is not None:
          sos = '{:4.3f}'.format(record_obj.sos)[1:] if record_obj.sos < 1 else '1.000'
          
+      # Get passing yards per attempt:
+      pya = '-'
+      if record_obj and record_obj.pya is not None:
+         if not median_pya:
+            pya = str(round(record_obj.pya, 1))
+         elif record_obj.pya < float(median_pya):
+            pya = '<span class="red">' + str(round(record_obj.pya, 1)) + '</span>'
+         else:
+            pya = '<span class="green">' + str(round(record_obj.pya, 1)) + '</span>'
+         
       # Get team matchup:
       match_obj = None if not matchups.has_key(team_id) else matchups[team_id]
       matchup = ''
@@ -251,7 +262,8 @@ def query_rankings(year, week, user):
          'net_pts': net_pts,
          'streak': streak,
          'sov': sov,
-         'sos': sos
+         'sos': sos,
+         'pya': pya
       }   
       
    # Update the cache:
