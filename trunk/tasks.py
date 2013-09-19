@@ -213,12 +213,37 @@ class MatchupAndRecordUpdater(web.RequestHandler):
                   teams[team2_id]['tie'] += 1
                   teams[team2_id]['streak'] = 0
 
-      #dvoa_rankings = self.get_dvoa_rankings(current_year)
-      
       for team_id in teams.keys():
          team = teams[team_id]
          team_obj = Team.get_by_key_name(team_id)
 
+         # Calculate strength of victory:
+         opp_wins = 0
+         opp_games = 0
+         for week in team['weeks'].keys():
+            matchup = team['weeks'][week]
+            if not matchup['result'] or (matchup['score'] < matchup['opp_score']):
+               continue
+            opp_team = teams[matchup['opp_team']]
+            opp_wins += opp_team['win'] + (opp_team['tie'] / 2.0)
+            opp_games += opp_team['win'] + opp_team['loss'] + opp_team['tie']
+         
+         sov = None if not opp_games > 0 else opp_wins / float(opp_games)
+
+         # Calculate strength of schedule:
+         opp_wins = 0
+         opp_games = 0
+         for week in team['weeks'].keys():
+            matchup = team['weeks'][week]
+            if not matchup['result']:
+               continue
+            opp_team = teams[matchup['opp_team']]
+            opp_wins += opp_team['win'] + (opp_team['tie'] / 2.0)
+            opp_games += opp_team['win'] + opp_team['loss'] + opp_team['tie']
+         
+         sos = None if not opp_games > 0 else opp_wins / float(opp_games)
+         
+         # Update the team record object
          record = Record.get_or_insert(
             str(current_year)+'-'+team_id, # 2011-ARI
             year=current_year,
@@ -230,16 +255,15 @@ class MatchupAndRecordUpdater(web.RequestHandler):
          record.pts_for = team['pts_for']
          record.pts_against = team['pts_against']
          record.streak = team['streak']
+         record.sov = sov
+         record.sos = sos
          record.off_pass_rank = team['off_pass_rank']
          record.off_rush_rank = team['off_rush_rank']
          record.def_pass_rank = team['def_pass_rank']
-         record.def_rush_rank = team['def_rush_rank']
-         
-         #if dvoa_rankings is not None:
-         #   record.dvoa = dvoa_rankings[team_id][1] 
-            
+         record.def_rush_rank = team['def_rush_rank']           
          record.put()
 
+         # Update team matchups
          for week in team['weeks'].keys():
             matchup = Matchup.get_or_insert(
                str(current_year)+'-'+str(week)+'-'+team_id, # 2011-8-ARI
@@ -259,62 +283,7 @@ class MatchupAndRecordUpdater(web.RequestHandler):
       # Update the cache:
       self.redirect('/tasks/update_cache?teams_updated='+('Y' if teams_updated else 'N'))
         
-   def get_dvoa_rankings(self, year):
-      acronym_mapping = {}
-      acronym_mapping['NE']  = 'NEP'
-      acronym_mapping['SEA'] = 'SEA'
-      acronym_mapping['DEN'] = 'DEN'
-      acronym_mapping['SF']  = 'SFO'
-      acronym_mapping['GB']  = 'GBP'
-      acronym_mapping['CHI'] = 'CHI'
-      acronym_mapping['NYG'] = 'NYG'
-      acronym_mapping['HOU'] = 'HOU'
-      acronym_mapping['BAL'] = 'BAL'
-      acronym_mapping['WAS'] = 'WAS'
-      acronym_mapping['ATL'] = 'ATL'
-      acronym_mapping['CIN'] = 'CIN'
-      acronym_mapping['DET'] = 'DET'
-      acronym_mapping['TB']  = 'TBB'
-      acronym_mapping['PIT'] = 'PIT'
-      acronym_mapping['CAR'] = 'CAR'    
-      acronym_mapping['DAL'] = 'DAL'    
-      acronym_mapping['MIN'] = 'MIN'    
-      acronym_mapping['STL'] = 'STL'    
-      acronym_mapping['MIA'] = 'MIA'    
-      acronym_mapping['BUF'] = 'BUF'    
-      acronym_mapping['NO']  = 'NOS'  
-      acronym_mapping['SD']  = 'SDC'    
-      acronym_mapping['NYJ'] = 'NYJ'    
-      acronym_mapping['CLE'] = 'CLE'    
-      acronym_mapping['PHI'] = 'PHI'    
-      acronym_mapping['ARI'] = 'ARI'    
-      acronym_mapping['IND'] = 'IND'   
-      acronym_mapping['TEN'] = 'TEN'   
-      acronym_mapping['OAK'] = 'OAK'   
-      acronym_mapping['JAC'] = 'JAC'   
-      acronym_mapping['KC']  = 'KCC'  
-      
-      url = 'http://www.footballoutsiders.com/stats/teameff%d' % (year)
-      try:
-         html = BeautifulSoup(urlopen(url))
-         tables = html.find_all('table', class_="stats")
-         if not tables:
-            raise URLError(404, 'Missing DVOA tables')        
-      except URLError:
-         return None
         
-      dvoa_rankings = {}
-      for row in tables[0].find_all('tr'):
-         cells = row.find_all('td')
-         rank = cells[0].string
-         if rank is not None:
-            team = cells[1].string
-            dvoa = cells[2].string
-            dvoa_rankings[acronym_mapping[team]] = (rank, dvoa)
-            
-      return dvoa_rankings
-
-      
 class TeamLoader(web.RequestHandler):
    def get(self):
       Team.get_or_insert('ARI', location='Arizona', nickname='Cardinals', logo_url='//i.imgur.com/eBCLhfo.png')

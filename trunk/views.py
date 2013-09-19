@@ -46,7 +46,6 @@ class RankingPage(web.RequestHandler):
       # Get user's profile (may not exist):
       profile = get_profile(user)
       display_avg = False if not profile or not profile.display_avg else profile.display_avg
-      display_dvoa = False if not profile or not profile.display_dvoa else profile.display_dvoa
       
       # Get team info:
       rankings = get_rankings(current_year, week, user)
@@ -58,7 +57,6 @@ class RankingPage(web.RequestHandler):
          'avg_rankings': avg_rankings,
          'has_prev_ranks': True if rankings[1]['prev_rank'] is not None else False,
          'display_avg': display_avg,
-         'display_dvoa': display_dvoa,
          'current_week': current_week,
          'current_year': current_year,
          'selected_week': week,
@@ -173,42 +171,6 @@ class DisplayAverageUpdater(web.RequestHandler):
          return
       
       self.redirect('/rank?week='+str(week))
-
-
-class DisplayDVOAUpdater(web.RequestHandler):
-   def post(self):
-      user = users.get_current_user()
-      current_week = get_setting('week')
-      week = self.request.POST['week']
-      display_dvoa = self.request.POST['display_dvoa']
-
-      # Check parameters:
-      if not user or not week or not display_dvoa:
-         self.response.headers['Content-Type'] = 'text/plain'
-         self.response.out.write('Bad POST data.')
-         return
-         
-      try:
-         week = int(week)
-         if week < 1 or week > current_week:
-            raise ValueError
-            
-         if display_dvoa not in ('Y', 'N'):
-            raise ValueError
-          
-         profile = UserProfile.get_or_insert(user.user_id(), user=user)
-         profile.display_dvoa = ('Y' == display_dvoa)
-         profile.put()
-         
-         # Update the cache:
-         get_profile(user, reload=True)
-            
-      except ValueError:
-         self.response.headers['Content-Type'] = 'text/plain'
-         self.response.out.write('Bad parameter.')
-         return
-      
-      self.redirect('/rank?week='+str(week))
       
 
 class TeamInfoService(web.RequestHandler):
@@ -246,7 +208,6 @@ urls = [
    ('/rank', RankingPage),
    ('/team', TeamInfoService),
    ('/update_display_avg', DisplayAverageUpdater),
-   ('/update_display_dvoa', DisplayDVOAUpdater),
    ('/tasks/update_teams', MatchupAndRecordUpdater),
    ('/tasks/load_teams', TeamLoader),
    ('/tasks/load_settings', SettingsLoader),
