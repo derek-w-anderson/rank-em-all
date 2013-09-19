@@ -5,12 +5,12 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta content="A tool for /r/NFLPowerRankers." name="description">
     <title>Rank 'Em All</title>
-    <link rel="stylesheet" type="text/css" href="/stylesheets/master.css?version=7.1" media="all">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/master.css?version=8" media="all">
   </head>
   
   <body onload="adjustRankAndRowColor(false, false)">
   {% set right_col_width = 150 %}
-  {% set left_col_width = 520 %} 
+  {% set left_col_width = 540 %} 
    
   {% if not has_prev_ranks %}
     {% set left_col_width = left_col_width - 35 %}
@@ -19,11 +19,7 @@
   {% if not display_avg %}
     {% set left_col_width = left_col_width - 35 %}
   {% endif %}
-   
-  {% if not display_dvoa %}
-    {% set left_col_width = left_col_width - 40 %}
-  {% endif %}
-   
+      
   {% set container_width = right_col_width + left_col_width + 26 %}
 
   <div id="container" style="width: {{ container_width }}px;" >
@@ -53,21 +49,22 @@
           <a href="javascript:;" class="clickable-header" {% if avg_rankings %}onclick="sortByAverageRank()"{% endif %}>Avg</a>
         </th>
 
-        <!-- DVOA -->
-        <th width="1%" nowrap="nowrap" {% if not display_dvoa %}style="display: none"{% endif %}>
-          <a href="javascript:;" class="clickable-header" onclick="sortByDVOA()">DVOA</a>
-        </th>
-            
         <!-- Record -->
         <th width="1%" nowrap="nowrap">
           <a href="javascript:;" class="clickable-header" onclick="sortByRecord()">W-L</a>
         </th>
             
+        <!-- Strength of victory -->
+        <th width="1%" nowrap="nowrap" title="Strength of victory">SOV</th>
+
+        <!-- Strength of schedule -->
+        <th width="1%" nowrap="nowrap" title="Strength of schedule">SOS</th>
+        
         <!-- Net Points -->
-        <th width="1%" nowrap="nowrap">Pts</th>
+        <th width="1%" nowrap="nowrap" title="Net points">Pts</th>
 
         <!-- Streak -->
-        <th width="1%" nowrap="nowrap">Strk</th>
+        <th width="1%" nowrap="nowrap" title="Win-loss streak">Strk</th>
             
         <!-- Weekly matchup -->
         <th nowrap="nowrap" style="text-align:left; padding-bottom:2px">
@@ -127,14 +124,17 @@
             {{ avg_rankings[rankings[rank]['team_id']].rank }}
           {% endif %}
         </td>
-
-        <!-- DVOA -->
-        <td nowrap="nowrap" class="dvoa-cell" {% if not display_dvoa %}style="display: none"{% endif %}>{{ rankings[rank]['dvoa'] }}</td>
             
         <!-- Record -->
         <td nowrap="nowrap" class="record-cell">{{ rankings[rank]['record'] }}</td>
 
-        <!-- Net Points -->
+        <!-- Strength of victory -->
+        <td nowrap="nowrap" class="sov-cell">{{ rankings[rank]['sov'] }}</td>
+
+        <!-- Strength of schedule -->
+        <td nowrap="nowrap" class="sov-cell">{{ rankings[rank]['sos'] }}</td>
+        
+        <!-- Net points -->
         <td nowrap="nowrap" class="netpts-cell">{{ rankings[rank]['net_pts'] }}</td>
             
         <!-- Streak -->
@@ -168,10 +168,6 @@
         <input type="hidden" name="week" value="{{ selected_week }}" />
       </form>
          
-      <form id="update-display-dvoa-form" action="/update_display_dvoa" method="post">
-        <input type="hidden" name="display_dvoa" value="{% if not display_dvoa %}Y{% else %}N{% endif %}" />
-        <input type="hidden" name="week" value="{{ selected_week }}" />
-      </form>
     </div> <!-- left-col -->
 
     <div id="right-col" style="width: {{ right_col_width }}px;">
@@ -229,8 +225,8 @@ Vikings</textarea>
     var rows = $('tbody > tr:not(:first-child)', this);
       rows.sort(function(a, b) {
         // Sort by most wins, then least losses:
-        var recA = $('td:eq({% if has_prev_ranks %}8{% else %}6{% endif %})', a).text().split('-');
-        var recB = $('td:eq({% if has_prev_ranks %}8{% else %}6{% endif %})', b).text().split('-');
+        var recA = $('td:eq({% if has_prev_ranks %}7{% else %}5{% endif %})', a).text().split('-');
+        var recB = $('td:eq({% if has_prev_ranks %}7{% else %}5{% endif %})', b).text().split('-');
         var winA = parseInt(recA[0]);
         var winB = parseInt(recB[0]);
         var lossA = parseInt(recA[1]);

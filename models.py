@@ -15,11 +15,12 @@ class Record(db.Model):
    pts_for = db.IntegerProperty()
    pts_against = db.IntegerProperty()
    streak = db.IntegerProperty()
+   sov = db.FloatProperty() # Strength of victory
+   sos = db.FloatProperty() # Strength of schedule
    off_pass_rank = db.IntegerProperty()
    off_rush_rank = db.IntegerProperty()
    def_pass_rank = db.IntegerProperty()
    def_rush_rank = db.IntegerProperty()
-   dvoa = db.StringProperty()
    last_updated = db.DateTimeProperty(auto_now=True)
         
 class Matchup(db.Model):

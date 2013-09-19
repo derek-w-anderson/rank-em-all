@@ -212,19 +212,20 @@ def query_rankings(year, week, user):
             streak = '<span class="green">' + str(record_obj.streak) + 'W</span>'
          elif record_obj.streak < 0:
             streak = '<span class="red">' + str(abs(record_obj.streak)) + 'L</span>'
-            
-      dvoa = '-' if not record_obj or not record_obj.dvoa else record_obj.dvoa     
       
+      # Get strength of victory/schedule:
+      sov = '-'
+      if record_obj and record_obj.sov is not None:
+         sov = '{:4.3f}'.format(record_obj.sov)[1:] if record_obj.sov < 1 else '1.000'
+
+      sos = '-'
+      if record_obj and record_obj.sos is not None:
+         sos = '{:4.3f}'.format(record_obj.sos)[1:] if record_obj.sos < 1 else '1.000'
+         
       # Get team matchup:
       match_obj = None if not matchups.has_key(team_id) else matchups[team_id]
       matchup = ''
       if match_obj and match_obj.result:
-         #span_class = ''
-         #if match_obj.result == 'W':
-         #   span_class = 'green' 
-         #elif match_obj.result == 'L':
-         #   span_class = 'red'
-         #matchup = '<span class="' + span_class + '">' + match_obj.result + '</span> ' 
          matchup += str(match_obj.score) + '-' + str(match_obj.opp_score) + ' '
       
       if match_obj and not match_obj.at_home:
@@ -249,7 +250,8 @@ def query_rankings(year, week, user):
          'record': record,
          'net_pts': net_pts,
          'streak': streak,
-         'dvoa': dvoa
+         'sov': sov,
+         'sos': sos
       }   
       
    # Update the cache:
