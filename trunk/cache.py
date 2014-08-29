@@ -171,6 +171,7 @@ def query_rankings(year, week, user):
    """
    Queries the datastore for team matchup, record, and ranking info. 
    """
+   week_setting = int(get_setting('week'))
    median_pya = get_setting('median-pya')
    records = get_records(year, reload=True)
    matchups = get_matchups(year, week, reload=True)
@@ -218,10 +219,22 @@ def query_rankings(year, week, user):
       sov = '-'
       if record_obj and record_obj.sov is not None:
          sov = '{:4.3f}'.format(record_obj.sov)[1:] if record_obj.sov < 1 else '1.000'
+         
+         if week_setting >= 8:
+            if record_obj.sov > .497: # Average 90th percentile (2009-2012)
+               sov = '<span class="green">' + sov + '</span>'
+            elif record_obj.sov < .337: # Average 10th percentile (2009-2012)
+               sov = '<span class="red">' + sov + '</span>'
 
       sos = '-'
       if record_obj and record_obj.sos is not None:
          sos = '{:4.3f}'.format(record_obj.sos)[1:] if record_obj.sos < 1 else '1.000'
+         
+         if week_setting >= 8:
+            if record_obj.sos > .545: # Average 90th percentile (2009-2012)
+               sos = '<span class="green">' + sos + '</span>'
+            elif record_obj.sos < .452: # Average 10th percentile (2009-2012)
+               sos = '<span class="red">' + sos + '</span>'
          
       # Get passing yards per attempt:
       pya = '-'
