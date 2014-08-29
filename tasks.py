@@ -219,7 +219,7 @@ class MatchupAndRecordUpdater(web.RequestHandler):
          response.close()
                   
       # Get passing stats:
-      passing_stats = self.get_passing_stats()
+      passing_stats = self.get_passing_stats(current_year)
       if passing_stats and len(passing_stats) == 32:
          all_pya = sorted(passing_stats.values())
          median_pya = (all_pya[15] + all_pya[16]) / 2.0
@@ -304,48 +304,53 @@ class MatchupAndRecordUpdater(web.RequestHandler):
       # Update the cache:
       self.redirect('/tasks/update_cache?teams_updated='+('Y' if teams_updated else 'N'))
 
-   def get_passing_stats(self):
+   def get_passing_stats(self, current_year):
       acronym_mapping = {}
-      acronym_mapping['New England Patriots']  = 'NEP'
-      acronym_mapping['Seattle Seahawks'] = 'SEA'
-      acronym_mapping['Denver Broncos'] = 'DEN'
-      acronym_mapping['San Francisco 49ers']  = 'SFO'
-      acronym_mapping['Green Bay Packers']  = 'GBP'
-      acronym_mapping['Chicago Bears'] = 'CHI'
-      acronym_mapping['New York Giants'] = 'NYG'
-      acronym_mapping['Houston Texans'] = 'HOU'
-      acronym_mapping['Baltimore Ravens'] = 'BAL'
-      acronym_mapping['Washington Redskins'] = 'WAS'
-      acronym_mapping['Atlanta Falcons'] = 'ATL'
-      acronym_mapping['Cincinnati Bengals'] = 'CIN'
-      acronym_mapping['Detroit Lions'] = 'DET'
-      acronym_mapping['Tampa Bay Buccaneers']  = 'TBB'
-      acronym_mapping['Pittsburgh Steelers'] = 'PIT'
-      acronym_mapping['Carolina Panthers'] = 'CAR'    
-      acronym_mapping['Dallas Cowboys'] = 'DAL'    
-      acronym_mapping['Minnesota Vikings'] = 'MIN'    
-      acronym_mapping['St. Louis Rams'] = 'STL'    
-      acronym_mapping['Miami Dolphins'] = 'MIA'    
-      acronym_mapping['Buffalo Bills'] = 'BUF'    
-      acronym_mapping['New Orleans Saints']  = 'NOS'  
-      acronym_mapping['San Diego Chargers']  = 'SDC'    
-      acronym_mapping['New York Jets'] = 'NYJ'    
-      acronym_mapping['Cleveland Browns'] = 'CLE'    
-      acronym_mapping['Philadelphia Eagles'] = 'PHI'    
-      acronym_mapping['Arizona Cardinals'] = 'ARI'    
-      acronym_mapping['Indianapolis Colts'] = 'IND'   
-      acronym_mapping['Tennessee Titans'] = 'TEN'   
-      acronym_mapping['Oakland Raiders'] = 'OAK'   
-      acronym_mapping['Jacksonville Jaguars'] = 'JAC'   
-      acronym_mapping['Kansas City Chiefs']  = 'KCC' 
+      acronym_mapping['New England']  = 'NEP'
+      acronym_mapping['Seattle'] = 'SEA'
+      acronym_mapping['Denver'] = 'DEN'
+      acronym_mapping['San Francisco']  = 'SFO'
+      acronym_mapping['Green Bay']  = 'GBP'
+      acronym_mapping['Chicago'] = 'CHI'
+      acronym_mapping['NY Giants'] = 'NYG'
+      acronym_mapping['Houston'] = 'HOU'
+      acronym_mapping['Baltimore'] = 'BAL'
+      acronym_mapping['Washington'] = 'WAS'
+      acronym_mapping['Atlanta'] = 'ATL'
+      acronym_mapping['Cincinnati'] = 'CIN'
+      acronym_mapping['Detroit'] = 'DET'
+      acronym_mapping['Tampa Bay']  = 'TBB'
+      acronym_mapping['Pittsburgh'] = 'PIT'
+      acronym_mapping['Carolina'] = 'CAR'    
+      acronym_mapping['Dallas'] = 'DAL'    
+      acronym_mapping['Minnesota'] = 'MIN'    
+      acronym_mapping['St. Louis'] = 'STL'    
+      acronym_mapping['Miami'] = 'MIA'    
+      acronym_mapping['Buffalo'] = 'BUF'    
+      acronym_mapping['New Orleans']  = 'NOS'  
+      acronym_mapping['San Diego']  = 'SDC'    
+      acronym_mapping['NY Jets'] = 'NYJ'    
+      acronym_mapping['Cleveland'] = 'CLE'    
+      acronym_mapping['Philadelphia'] = 'PHI'    
+      acronym_mapping['Arizona'] = 'ARI'    
+      acronym_mapping['Indianapolis'] = 'IND'   
+      acronym_mapping['Tennessee'] = 'TEN'   
+      acronym_mapping['Oakland'] = 'OAK'   
+      acronym_mapping['Jacksonville'] = 'JAC'   
+      acronym_mapping['Kansas City']  = 'KCC' 
    
-      url = 'http://fantasydata.com/nfl-stats/team-stats.aspx?ta=0&tc=2' #ta=0 for Offense, tc=2 for Passing
+      url = 'http://espn.go.com/nfl/statistics/team/_/stat/passing/year/' + str(current_year)
       passing_stats = None
       try:
          html = BeautifulSoup(urlopen(url))
-         table = html.find(id='StatsGrid')
+         
+         h1 = html.find('h1')
+         if not h1 or h1.string[-4:] != str(current_year):
+            raise URLError('Current year stats not available')
+         
+         table = html.find(id='my-teams-table').find('table', {'class': 'tablehead'})
          if not table:
-            raise URLError(404, 'Missing stat table')    
+            raise URLError('Missing stat table')    
 
          passing_stats = {}
          rows = table.find_all('tr')
@@ -353,17 +358,17 @@ class MatchupAndRecordUpdater(web.RequestHandler):
             cells = row.find_all('td')
             team_name = cells[1].string
             
-            if cells[6].string != '0':
-               # Adjusted passing yards / (passing attempts + sacks)
-               passing_stats[acronym_mapping[team_name]] = int(cells[8].string) / float(int(cells[6].string) + int(cells[14].string))   
+            if cells[5].string != '0':
+               # NY/A - net yards gained per pass attempt [pass yards / (passing attempts + sacks)]
+               passing_stats[acronym_mapping[team_name]] = int(cells[5].string) / float(int(cells[2].string) + int(cells[10].string))
             else:
-               passing_stats[acronym_mapping[team_name]] = 0.0  
+               passing_stats[acronym_mapping[team_name]] = 0.0
       except:
-         logging.error('Could not load passing stats from FantasyData.com')
+         logging.error('Could not load passing stats from ESPN.com')
 
       return passing_stats
 
-   
+
 class TeamLoader(web.RequestHandler):
    def get(self):
       Team.get_or_insert('ARI', location='Arizona', nickname='Cardinals', logo_url='//i.imgur.com/eBCLhfo.png')
