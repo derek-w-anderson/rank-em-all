@@ -260,7 +260,7 @@ class MatchupAndRecordUpdater(web.RequestHandler):
          
          # Get passing yards per attempt:
          pya = None
-         if passing_stats:
+         if passing_stats and team_id in passing_stats:
             pya = passing_stats[team_id]
          
          # Update the team record object
