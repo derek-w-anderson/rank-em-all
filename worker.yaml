@@ -1,0 +1,68 @@
+service: worker
+runtime: python27
+api_version: 1
+threadsafe: true
+
+instance_class: B1
+
+manual_scaling:
+  instances: 1
+  
+inbound_services:
+- warmup
+
+libraries:
+- name: jinja2
+  version: latest
+  
+handlers:
+- url: /stylesheets
+  static_dir: static/css
+  
+- url: /scripts
+  static_dir: static/js
+  
+#- url: /images/(.*\.(png))
+#  static_files: static/images/\1
+#  upload: static/images/(.*\.(png))
+#  mime_type: png
+  
+- url: /rank
+  script: views.app
+
+- url: /team
+  script: views.app
+  
+- url: /update_display_avg
+  script: views.app
+
+- url: /update_display_dvoa
+  script: views.app
+  
+- url: /tasks/update_teams
+  script: views.app
+  login: admin
+  
+- url: /tasks/load_teams
+  script: views.app
+  login: admin
+
+- url: /tasks/load_settings
+  script: views.app
+  login: admin
+  
+- url: /tasks/calculate_averages
+  script: views.app
+  login: admin
+  
+- url: /tasks/copy_rankings
+  script: views.app
+  login: admin
+  
+- url: /tasks/update_cache
+  script: views.app
+  login: admin
+  
+- url: /admin/manage_settings
+  script: views.app
+  login: admin
