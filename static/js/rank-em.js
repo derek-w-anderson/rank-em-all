@@ -177,7 +177,7 @@ var team_logo_mapping = {
   'DAL': '//i.imgur.com/ci3roHx.png',
   'NYG': '//i.imgur.com/vnRA0ek.png',
   'SEA': '//i.imgur.com/PzKfAjA.png',
-  'STL': '//i.imgur.com/RXpnWBP.png',
+  'RAM': '//i.imgur.com/RXpnWBP.png',
   'SFO': '//i.imgur.com/eusAn6o.png',
   'NEP': '//i.imgur.com/d2x3A8w.png',
   'PIT': '//i.imgur.com/oK2OtUR.png',
