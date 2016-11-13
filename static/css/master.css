@@ -231,6 +231,7 @@ select#week-select {
 	font-family: verdana, sans-serif;
 	margin: 0 0 2px -2px;
 	border: 0;
+	width: 40px;
 }
 
 div#button-container {
