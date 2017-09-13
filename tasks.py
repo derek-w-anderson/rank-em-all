@@ -324,11 +324,11 @@ class MatchupAndRecordUpdater(web.RequestHandler):
       acronym_mapping['Carolina']      = 'CAR'    
       acronym_mapping['Dallas']        = 'DAL'    
       acronym_mapping['Minnesota']     = 'MIN'    
-      acronym_mapping['Los Angeles']   = 'RAM'    
+      acronym_mapping['LA Rams']       = 'LAR'
       acronym_mapping['Miami']         = 'MIA'    
       acronym_mapping['Buffalo']       = 'BUF'    
       acronym_mapping['New Orleans']   = 'NOS'  
-      acronym_mapping['San Diego']     = 'SDC'    
+      acronym_mapping['LA Chargers']   = 'LAC'
       acronym_mapping['NY Jets']       = 'NYJ'    
       acronym_mapping['Cleveland']     = 'CLE'    
       acronym_mapping['Philadelphia']  = 'PHI'    
@@ -393,14 +393,14 @@ class TeamLoader(web.RequestHandler):
       Team.get_or_insert('DAL', location='Dallas', nickname='Cowboys', logo_url='//i.imgur.com/ci3roHx.png')
       Team.get_or_insert('NYG', location='New York', nickname='Giants', logo_url='//i.imgur.com/vnRA0ek.png')
       Team.get_or_insert('SEA', location='Seattle', nickname='Seahawks', logo_url='//i.imgur.com/PzKfAjA.png')
-      Team.get_or_insert('STL', location='St. Louis', nickname='Rams', logo_url='//i.imgur.com/RXpnWBP.png')
+      Team.get_or_insert('LAR', location='Los Angeles', nickname='Rams', logo_url='//i.imgur.com/RXpnWBP.png')
       Team.get_or_insert('SFO', location='San Francisco', nickname='49ers', logo_url='//i.imgur.com/eusAn6o.png')
       Team.get_or_insert('NEP', location='New England', nickname='Patriots', logo_url='//i.imgur.com/d2x3A8w.png')
       Team.get_or_insert('PIT', location='Pittsburgh', nickname='Steelers', logo_url='//i.imgur.com/oK2OtUR.png')
       Team.get_or_insert('PHI', location='Philadelphia', nickname='Eagles', logo_url='//i.imgur.com/23CogLS.png')
       Team.get_or_insert('WAS', location='Washington', nickname='Redskins', logo_url='//i.imgur.com/bstfEdQ.png')
       Team.get_or_insert('GBP', location='Green Bay', nickname='Packers', logo_url='//i.imgur.com/jtHzuOR.png')
-      Team.get_or_insert('SDC', location='San Diego', nickname='Chargers', logo_url='//i.imgur.com/DUXA4ax.png')
+      Team.get_or_insert('LAC', location='Los Angeles', nickname='Chargers', logo_url='//i.imgur.com/DUXA4ax.png')
       Team.get_or_insert('OAK', location='Oakland', nickname='Raiders', logo_url='//i.imgur.com/EAFY79R.png')
       Team.get_or_insert('NOS', location='New Orleans', nickname='Saints', logo_url='//i.imgur.com/w1Id7n6.png')
 
