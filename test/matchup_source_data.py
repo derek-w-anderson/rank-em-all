@@ -5,9 +5,9 @@ from time import strftime, gmtime
 from xml.dom import minidom
 
 offset = 4 * (60 * 60)  # adjusts kickoff time to ET
-current_year = 2015
-current_week = 11
-api_url = 'http://football.myfantasyleague.com/%d/export?TYPE=nflSchedule&W=%d'
+current_year = 2018
+current_week = 1
+api_url = 'http://api.myfantasyleague.com/%d/export?TYPE=nflSchedule&W=%d'
 
 teams = {}
 for week in range(1, current_week+1):

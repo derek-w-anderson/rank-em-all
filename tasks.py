@@ -111,7 +111,7 @@ class MatchupAndRecordUpdater(web.RequestHandler):
       offset = 4 * (60 * 60)  # adjusts kickoff time to ET
       current_year = get_setting('year')
       current_week = get_setting('week')
-      api_url = 'http://football.myfantasyleague.com/%d/export?TYPE=nflSchedule&W=%d'
+      api_url = 'http://api.myfantasyleague.com/%d/export?TYPE=nflSchedule&W=%d'
       
       teams = {}
       for week in range(1, current_week+1):
